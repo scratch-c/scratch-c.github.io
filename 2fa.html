@@ -45,19 +45,6 @@
 			.notification.show { opacity: 1; transform: translateX(0);}
 		</style>
 	</head>
-	<body>
-		<div class="container gutter-top 2fatool">
-			<div class="row sticky-parent">
-				<aside class="col-12 col-md-12 col-lg-2">
-					<div class="sidebar box sticky-column">
-						<ul class="nav">
-							<li class="nav__item"><a class="active" href="https://2fa.run"><i class="icon-key"></i>2FA工具</a></li>
-							<li class="nav__item"><a href="note.html"><i class="icon-clipboard"></i>文本处理</a></li>
-							<li class="nav__item"><a href="work.html"><i class="icon-instagram1"></i>图片处理</a></li>
-							<li class="nav__item"><a href="money.html"><i class="icon-activity"></i>汇率换算</a></li>
-							<li class="nav__item"><a href="more.html"><i class="icon-more-horizontal"></i>更多工具</a></li>
-						</ul>
-					</div>
 				</aside>
 				<div class="col-12 col-md-12 col-lg-10">
 					<div class="box box-content">
@@ -88,26 +75,7 @@
 							<button class="btn-qr del_2fakeys" onclick="delText()">清除本地记录的2FA密钥</button>
 						</div>
 						<hr />
-						<h3 class="title title--h5">2FA工具说明</h3>
-						<p class="tip-p"><strong>演示密钥</strong>：<span
-								id="testKey">7J64V3P3E77J3LKNUGSZ5QANTLRLTKVL</span>（点击此密钥可复制）<br /><strong>新手提示</strong>：必须在倒计时结束前输入验证码登录或验证，否则会失效显示错误。测试功能时必须输入正确编码的密钥，不要随便输入1串字符测试获取功能。目前点击获取验证码的按钮后会自动复制验证码到剪切板，直接去粘贴即可。如果想要验证生成的验证码是否正确，点击生成二维码的按钮，使用谷歌验证器APP扫描添加检查。<br /><strong>更多方式</strong>：还可以将密钥加在网址（https://2fa.run/2fa/）后面，示例：<a
-								href="https://2fa.run/2fa/7J64V3P3E77J3LKNUGSZ5QANTLRLTKVL"
-								target="_blank">https://2fa.run/2fa/7J64V3P3E77J3LKNUGSZ5QANTLRLTKVL</a>，这样访问也可查询验证码。这样的格式发给新手使用，最合适不过。
-							<br><strong>最近维护</strong>：2023年10月22日
-						</p>
-					</div>
-					<footer class="footer">©2023 在线工具</footer>
-				</div>
-			</div>
-		</div>
 		<div id="notification-container"></div>
-		<div id="myModal" class="modal">
-			<div class="modal-content">
-				<span class="close">&times;</span>
-				<div id="qrcode"></div>
-				<p class="qr-text">可以使用Google Authenticator扫描上方二维码把密钥添加至手机。</p>
-			</div>
-		</div>
 		<div class="back-to-top"></div>
 		<script src="assets/js/jquery-3.4.1.min.js"></script>
 		<script src="assets/js/plugins.min.js"></script>
