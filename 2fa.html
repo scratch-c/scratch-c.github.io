@@ -1,0 +1,382 @@
+
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<title>2FA工具</title>
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<meta name="author" content="在线工具网站" />
+		<meta name="keywords" content="2FA,2fa,2fa在线工具,2FA Auth,2FA live,2FA Code,双重验证工具,汇率换算,世界时间,文本处理工具,FB账号批量检测,facebook批量检测,谷歌验证器网页版,Google authenticator网页版" />
+		<meta name="description" content="本站所有在线工具免费使用，旨在方便大家做业务。工具主要有：2FA验证码获取、汇率换算、文本处理、图片编辑、世界时间、节假日倒计时、笔记分享。" />
+		<link rel="apple-touch-icon" sizes="144x144" href="assets/images/favicons/apple-touch-icon-144x144.png">
+		<link rel="apple-touch-icon" sizes="57x57" href="assets/images/favicons/apple-touch-icon-57x57.png">
+		<link rel="shortcut icon" href="assets/images/favicons/tools.png" type="image/png">
+		<link rel="stylesheet" type="text/css" href="assets/styles/style.css" />
+		<script src="assets/js/otpauth.umd.min.js"></script>
+		<script src="assets/js/qrcode.min.js"></script>
+		<style>
+			* { word-break: break-all;}
+			textarea{background-color: #F7F9FA; border: 0px; border-radius: 0.55rem;padding:2px 4px; box-shadow: none; color: #5E6E80;width: 100%;height:120px!important; box-shadow: inset 0px 0px 1px 1px rgb(50 174 77);}
+			.pb-sm-2,.py-sm-2 { padding-bottom: 0px !important;}
+			.class-2fa,hr{float:left;width:100%;}
+			.title-2fa { position: relative; color: #3B4B5E; font-size: 2rem; font-family: "Poppins", sans-serif; font-weight: 600;}
+			.title-p { margin-bottom: 0px !important;}
+			.input-2fa { background-color: #F7F9FA; border: 0px; border-radius: 0.55rem; box-shadow: none; color: #5E6E80; padding: 0.875rem 1.375rem 0.8125rem; outline: none !important; position: relative; width: 100%; box-shadow: inset 0px 0px 1px 1px rgb(50 174 77); font-size: 0.88rem; font-weight: 600;}
+			.btn-get:hover,.btn-qr:hover { background: none; color: #000; box-shadow: inset 0px 0px 1px 1px rgb(50 174 77);}
+			.input-2fa:focus { box-shadow: inset 0px 0px 2px 2px rgb(50 174 77); background: white;}
+			.div-2fa { margin-bottom: 0.65rem; font-size: 0.88rem;}
+			.div-2fa>span { margin-left: 0.55rem; font-weight: 600;}
+			button{-webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;}
+			.message-class { font-weight: 300 !important;}
+			.btn-get { background-image: linear-gradient(142.17deg, #009688 6.66%, #00d708de 91.48%); box-shadow: inset -0.25rem -0.25rem 0.3125rem rgba(0, 0, 0, 0.1), inset 0.25rem 0.25rem 0.3125rem rgba(255, 255, 255, 0.23); border-radius: 0.35rem; border: 0; color: #fff; cursor: pointer; font-size: 1rem; font-weight: 600; padding: 0.23rem 0.86rem;}
+			#message_js,#message { margin-left: 1rem;}
+			.btn-qr { float: right; border: 0px; background-image: linear-gradient(142.17deg, #009688 6.66%, #00d708de 91.48%); box-shadow: inset -0.25rem -0.25rem 0.3125rem rgba(0, 0, 0, 0.1), inset 0.25rem 0.25rem 0.3125rem rgba(255, 255, 255, 0.23); border-radius: 0.25rem; color: #fff; cursor: pointer; font-size: 0.88rem; font-weight: 600;}
+			.modal { display: none; position: fixed; z-index: 1; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0, 0, 0, 0.4);}
+			.modal-content { background-color: #fefefe; padding: 30px; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); border: 1px solid #888; max-width: 320px; overflow: hidden; text-align: center;}
+			.close { color: #aaa; float: right; font-size: 28px; font-weight: bold;}
+			.close:hover,.close:focus { color: black; text-decoration: none; cursor: pointer;}
+			#qrcode { width: 250px; height: 250px; margin: auto; display: block;}
+			.qr-text { text-align: center; font-size: 16px; margin: 20px 0px;}
+			.del_2fakeys{background-image: linear-gradient(142.17deg, #ff6767 6.66%, #ae4c1ade 91.48%)!important;}
+			.del_2fakeys:hover{box-shadow: inset 0px 0px 1px 1px rgb(249 78 78);background-image:none!important;color:red;}
+			#notification-container { position: fixed; top: 20px; right: 20px; z-index: 9999;}
+			.notification { background-color: #030303bf; color: #fff; padding: 15px; border-radius: 4px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); opacity: 0; transform: translateX(100%); transition: opacity 0.5s, transform 0.5s;}
+			.notification.show { opacity: 1; transform: translateX(0);}
+		</style>
+	</head>
+	<body>
+		<div class="container gutter-top 2fatool">
+			<div class="row sticky-parent">
+				<aside class="col-12 col-md-12 col-lg-2">
+					<div class="sidebar box sticky-column">
+						<ul class="nav">
+							<li class="nav__item"><a class="active" href="https://2fa.run"><i class="icon-key"></i>2FA工具</a></li>
+							<li class="nav__item"><a href="note.html"><i class="icon-clipboard"></i>文本处理</a></li>
+							<li class="nav__item"><a href="work.html"><i class="icon-instagram1"></i>图片处理</a></li>
+							<li class="nav__item"><a href="money.html"><i class="icon-activity"></i>汇率换算</a></li>
+							<li class="nav__item"><a href="more.html"><i class="icon-more-horizontal"></i>更多工具</a></li>
+						</ul>
+					</div>
+				</aside>
+				<div class="col-12 col-md-12 col-lg-10">
+					<div class="box box-content">
+						<div class="pb-0 pb-sm-2">
+							<h1 class="title-2fa">2FA验证</h1>
+							<p class="title-p">双重验证码/二步验证码获取工具（相当于谷歌身份验证器的网页版），使用时任选1种方式输入密钥获取即可。</p>
+						</div>
+						<hr />
+						<div class="class-2fa">
+							<div class="div-2fa"><input id="secret-input-js" class="input-2fa" type="text" placeholder="点击此处输入密钥" autocomplete="on"></div>
+							<div class="div-2fa"><button id="btn-js" class="btn-get">点击获取验证码</button><span class="message-class">JS实现</span></div>
+							<div class="div-2fa" id="key-output-js">双重密钥为: <span id="key_js"></span></div>
+							<div class="div-2fa" id="code-output-js">当前验证码: <span id="code_js"></span></div>
+							<div class="div-2fa">剩余的时间: <span id="timer_js">30</span> 秒 <button class="btn-qr" onclick="showModalJS()">生成二维码</button></div>
+						</div>
+						<hr />
+						<div class="class-2fa">
+							<div class="div-2fa"><input id="secret-input" class="input-2fa" type="text"
+									placeholder="点击此处输入密钥" autocomplete="on"></div>
+							<div class="div-2fa"><button id="btn-php" class="btn-get">点击获取验证码</button><span class="message-class">PHP实现</span></div>
+							<div class="div-2fa" id="key-output">双重密钥为: <span id="key"></span></div>
+							<div class="div-2fa" id="code-output">当前验证码: <span id="code"></span></div>
+							<div class="div-2fa">剩余的时间: <span id="timer">30</span> 秒<button class="btn-qr" onclick="showModal()">生成二维码</button></div>
+						</div>
+						<hr />
+						<div class="class-2fa">
+							<textarea id="2fa_keys" placeholder="这里记录了获取过验证码的2FA密钥，你也可以备注任何信息到此处，但是要注意本区域内容是保存在浏览器缓存中的，清除浏览器cookie或点击下方清除按钮将丢失内容，请谨慎操作并保存自己的数据信息！"></textarea>
+							<button class="btn-qr del_2fakeys" onclick="delText()">清除本地记录的2FA密钥</button>
+						</div>
+						<hr />
+						<h3 class="title title--h5">2FA工具说明</h3>
+						<p class="tip-p"><strong>演示密钥</strong>：<span
+								id="testKey">7J64V3P3E77J3LKNUGSZ5QANTLRLTKVL</span>（点击此密钥可复制）<br /><strong>新手提示</strong>：必须在倒计时结束前输入验证码登录或验证，否则会失效显示错误。测试功能时必须输入正确编码的密钥，不要随便输入1串字符测试获取功能。目前点击获取验证码的按钮后会自动复制验证码到剪切板，直接去粘贴即可。如果想要验证生成的验证码是否正确，点击生成二维码的按钮，使用谷歌验证器APP扫描添加检查。<br /><strong>更多方式</strong>：还可以将密钥加在网址（https://2fa.run/2fa/）后面，示例：<a
+								href="https://2fa.run/2fa/7J64V3P3E77J3LKNUGSZ5QANTLRLTKVL"
+								target="_blank">https://2fa.run/2fa/7J64V3P3E77J3LKNUGSZ5QANTLRLTKVL</a>，这样访问也可查询验证码。这样的格式发给新手使用，最合适不过。
+							<br><strong>最近维护</strong>：2023年10月22日
+						</p>
+					</div>
+					<footer class="footer">©2023 在线工具</footer>
+				</div>
+			</div>
+		</div>
+		<div id="notification-container"></div>
+		<div id="myModal" class="modal">
+			<div class="modal-content">
+				<span class="close">&times;</span>
+				<div id="qrcode"></div>
+				<p class="qr-text">可以使用Google Authenticator扫描上方二维码把密钥添加至手机。</p>
+			</div>
+		</div>
+		<div class="back-to-top"></div>
+		<script src="assets/js/jquery-3.4.1.min.js"></script>
+		<script src="assets/js/plugins.min.js"></script>
+		<script src="assets/js/common.js"></script>
+		<script>
+			let key01, key02, keyAll, key01val, key02val;
+			let localkey = window.localStorage;
+			let refreshCount = 0;
+			var currentDate = new Date();
+            var dateString = currentDate.getFullYear() + "."
+                           + (currentDate.getMonth()+1) + "."
+                           + currentDate.getDate();
+			const MAX_REFRESH_COUNT = 3;
+			$(document).ready(function() {
+				startTimer();
+				$("input").prop('disabled', true);
+				$("textarea").prop('disabled', true);
+				$("#secret-input-js").val(localkey.getItem("key01"));
+				$("#secret-input").val(localkey.getItem("key02"));
+				$("#2fa_keys").val(localkey.getItem("keyAll"));
+				
+				setTimeout(function() {
+				    $('input').prop('disabled', false);
+				    $("textarea").prop('disabled', false);
+				},500)
+			});
+			$(".input-2fa").on("click", function() {
+				this.select();
+				$(this).css("color", "red");
+				let textlen = $(this).val();
+				if (textlen != "") {
+					showNotification("已全选数据");
+				}
+			});
+			$("#btn-js").on("click", function() {
+				let secret = $('#secret-input-js').val();
+				secret = filterAndValidateSecret(secret);
+				if (!secret) return;
+				getCodeJS();
+                updateText(secret);
+				copyToClipboard("code_js");
+				refreshCount = 0;
+			});
+			$("#btn-php").on("click", function() {
+		    	let secret = $('#secret-input').val();
+				secret = filterAndValidateSecret(secret);
+				if (!secret) return;
+				getCode(function(newCode) {
+					$("#code").text(newCode);
+					copyToClipboard("code");
+				});
+                updateText(secret);
+				refreshCount = 0;
+			});
+			$("#testKey").on("click", function() {
+				copyToClipboard("testKey");
+				showNotification("已复制测试密钥");
+			});
+			
+			$('#2fa_keys').on('input', function() {
+                localStorage.setItem('keyAll', $(this).val());
+            });
+			
+			function updateText(secret) {
+			    var newkeyText = dateString + " - " + secret +"\n";
+            	$('#2fa_keys').val(function(i, text) {
+                  return newkeyText + text;
+                });
+                var lines = $('#2fa_keys').val().split('\n');
+                var uniqueLines = Array.from(new Set(lines));
+                var uniqueContent = uniqueLines.join('\n');
+                localStorage.setItem('keyAll', uniqueContent);
+                $('#2fa_keys').val(uniqueContent);
+			}
+            function delText() {
+                $('#2fa_keys').val("");
+                localStorage.setItem('keyAll', "");
+            }
+			function filterAndValidateSecret(rawSecret) {
+				if (rawSecret == "" || rawSecret == null) {
+					return null;
+				}
+				let secret = rawSecret.replace(/\s+/g, '');
+				let pattern = /^[A-Z2-7]+$/;
+				secret = secret.toUpperCase();
+				if (secret.length < 16) {
+					showNotification("密钥太短，请重新输入。");
+					return null;
+				}
+				if (secret.length > 64) {
+					showNotification("密钥过长，请重新输入。");
+					return null;
+				}
+				if (!pattern.test(secret)) {
+					showNotification("非正确编码的密钥，请重新输入。");
+					return null;
+				}
+				return secret;
+			}
+			function getCodeJS() {
+				let secret = $('#secret-input-js').val();
+				secret = filterAndValidateSecret(secret);
+				if (!secret) return;
+				const totp = new OTPAuth.TOTP({
+					algorithm: 'SHA1',
+					digits: 6,
+					period: 30,
+					secret: OTPAuth.Secret.fromBase32(secret)
+				});
+				const code = totp.generate();
+				$("#key_js").text(secret);
+				$("#code_js").text(code);
+				$("#code_js").css("color", "rgb(50 174 77)");
+				localStorage.setItem("key01", secret);
+				showNotification("已成功获取验证码哦~");
+			}
+			function getCode(callback) {
+				const secret = $("#secret-input").val();
+				if (secret == "" || secret == null) {
+					return;
+				} else {
+					$.get('/app/2fa.php', {
+						secret: secret
+					}, function(data) {
+						if (data.success) {
+							$("#key").text(data.key);
+							$("#code").text(data.newCode);
+							$("#code").css("color", "rgb(50 174 77)");
+							localStorage.setItem("key02", data.key);
+							showNotification("已成功获取验证码哦~");
+							if (typeof callback === "function") {
+								callback(data.newCode);
+							}
+						} else {
+							showNotification(data.message);
+						}
+					}, 'json');
+				}
+			}
+			function startTimer() {
+				let currentSecond = new Date().getSeconds();
+				let secondsLeft = 30 - (currentSecond % 30);
+				updateTimerDisplay(secondsLeft);
+				setInterval(() => {
+					secondsLeft--;
+					updateTimerDisplay(secondsLeft);
+					if (secondsLeft == 0) {
+						secondsLeft = 30;
+						let inputJsVal = $("#secret-input-js").val();
+						let inputPhpVal = $("#secret-input").val();
+						let secret1 = filterAndValidateSecret(inputJsVal);
+						let secret2 = filterAndValidateSecret(inputPhpVal);
+						if (refreshCount < MAX_REFRESH_COUNT) {
+							if (secret1) {
+								getCodeJS();
+							} else {
+								$("#key_js").text("");
+								$("#code_js").text("");
+							}
+
+							if (secret2) {
+								getCode();
+							} else {
+								$("#key").text("");
+								$("#code").text("");
+							}
+							if (secret1 || secret2) {
+								refreshCount++;
+							}
+						} else {
+							if (secret1) {
+								$("#code_js").text("已超时，需要重新点击按钮获取！");
+								$("#code_js").css("color", "red");
+							}
+							if (secret2) {
+								$("#code").text("已超时，需要重新点击按钮获取！");
+								$("#code").css("color", "red");
+							}
+						}
+					}
+				}, 1000);
+			}
+			function updateTimerDisplay(secondsLeft) {
+				$("#timer").text(secondsLeft);
+				$("#timer_js").text(secondsLeft);
+			}
+			function generateQRCode(secretInput) {
+				let lastSeven = secretInput.slice(-7);
+				const label = 'Handy tool';
+				const issuer = '2fa.run|...' + lastSeven;
+				const totp = new OTPAuth.TOTP({
+					algorithm: 'SHA1',
+					digits: 6,
+					period: 30,
+					secret: OTPAuth.Secret.fromBase32(secretInput),
+					label: label,
+					issuer: issuer
+				});
+				const uri = totp.toString();
+				const qrContainer = document.getElementById('qrcode');
+				while (qrContainer.firstChild) {
+					qrContainer.removeChild(qrContainer.firstChild);
+				}
+				new QRCode(document.getElementById('qrcode'), {
+					text: uri
+				});
+			}
+			function showModalJS() {
+				let secret = $('#secret-input-js').val();
+				if (secret == "" || secret == null) {
+					showNotification("密钥未填写！");
+					return;
+				} else {
+					secret = filterAndValidateSecret(secret);
+					if (!secret) return;
+					generateQRCode(secret);
+					const modal = document.getElementById("myModal");
+					modal.style.display = "block";
+				}
+			}
+			function showModal() {
+				let secret = $('#secret-input').val();
+				if (secret == "" || secret == null) {
+					showNotification("密钥未填写！");
+					return;
+				} else {
+					secret = filterAndValidateSecret(secret);
+					if (!secret) return;
+					generateQRCode(secret);
+					const modal = document.getElementById("myModal");
+					modal.style.display = "block";
+				}
+			}
+			document.getElementsByClassName("close")[0].onclick = function() {
+				const modal = document.getElementById("myModal");
+				modal.style.display = "none";
+			}
+			window.onclick = function(event) {
+				const modal = document.getElementById("myModal");
+				if (event.target == modal) {
+					modal.style.display = "none";
+				}
+			}
+			function showNotification(message) {
+				const container = document.getElementById('notification-container');
+				const notification = document.createElement('div');
+				notification.className = 'notification';
+				notification.textContent = message;
+				container.appendChild(notification);
+				void notification.offsetWidth;
+				notification.classList.add('show');
+				setTimeout(() => {
+					notification.remove();
+				}, 3000);
+			}
+
+			function copyToClipboard(elementId) {
+				const input = document.createElement('input');
+				input.value = document.getElementById(elementId).textContent;
+				document.body.appendChild(input);
+				input.select();
+				const successful = document.execCommand('copy');
+				document.body.removeChild(input);
+				if (!successful) {
+				// 	showNotification("已复制验证码~");
+				// } else {
+					showNotification("无法自动复制，请手动操作！");
+				}
+			}
+		</script>
+	</body>
+</html>
