@@ -1,17 +1,21 @@
 <!DOCTYPE html>
-<link rel="stylesheet" href="/assets/css/style.css">
-<link rel="shortcut icon" href="/pics/hdico.ico">
 <html>
 <head>
-  <title>测试</title>
+  <link rel="stylesheet" href="/assets/css/style.css">
+  <link rel="shortcut icon" href="/pics/hdico.ico">
+  <title>scratch_szc's blog</title>
 </head>
 <body>
-  <h1>Hello World</h1>
-</body>
-  <script>
-       fetch('part/bottem.html')
-      .then(response => response.text())
-      .then(html => document.getElementById('footer').innerHTML = html);
-  </script>
+  <div id="up"></div> 
+  <h1>有很多很多很多的bug，等待修复。。。</h1>
   <div id="bottem"></div> 
+  <script>
+    fetch('/part/bottom.html')
+      .then(response => response.text())
+      .then(html => document.getElementById('bottem').innerHTML = html);
+    fetch('/part/up.html')
+      .then(response => response.text())
+      .then(html => document.getElementById('up').innerHTML = html);
+  </script>
+</body>
 </html>
