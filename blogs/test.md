@@ -1,5 +1,4 @@
 ---
-layout: post    # 如果用 Jekyll
 title: "博客测试"
 date: 2024-05-20
 ---
