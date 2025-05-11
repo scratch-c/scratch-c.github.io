@@ -1,13 +1,14 @@
-/* ===== 深色极简博客主题 ===== */
+/* ===== 浅色主题变量 ===== */
 :root {
-  --primary: #9b59b6;   /* 紫色标题 */
-  --secondary: #3498db; /* 蓝色横线/强调色 */
-  --text: #ecf0f1;       /* 白色正文 */
-  --background: #1a1a1a; /* 深色背景 */
-  --code-bg: #2c3e50;    /* 代码块背景 */
+  --primary: #6A1B9A;        /* 柔和紫色 */
+  --secondary: #2E86C1;      /* 浅海蓝色 */
+  --text: #2C3E50;           /* 深灰蓝 */
+  --background: #F9F9F9;     /* 浅灰背景 */
+  --code-bg: #ECF0F1;        /* 代码块浅灰 */
+  --border: #BDC3C7;         /* 中性浅灰 */
 }
 
-/* ===== 全局样式 ===== */
+/* ===== 全局重置 ===== */
 body {
   font-family: 'Segoe UI', system-ui, sans-serif;
   line-height: 1.6;
@@ -19,37 +20,29 @@ body {
 }
 
 /* ===== 标题系统 ===== */
-h1 {
+h1.title {
   color: var(--primary);
   font-size: 2.5rem;
   margin: 2rem 0 0.5rem;
-  position: relative;
   padding-bottom: 0.5rem;
-}
-
-h1::after {
-  content: "";
-  display: block;
-  width: 120px;
-  height: 3px;
-  background: var(--secondary);
-  position: absolute;
-  bottom: 0;
-  left: 0;
+  border-bottom: 3px solid var(--secondary);
 }
 
 h2 {
   color: var(--secondary);
   font-size: 1.8rem;
   margin: 2rem 0 1rem;
+  border-bottom: 2px solid #D6EAF8;  /* 浅蓝色分隔线 */
+  padding-bottom: 0.5rem;
 }
 
 /* ===== 内容区块 ===== */
 .content-section {
-  margin: 2rem 0;
-  padding: 1.5rem;
-  background: rgba(255,255,255,0.05);
+  background: white;
   border-radius: 8px;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
 /* ===== 列表样式 ===== */
@@ -84,6 +77,7 @@ pre {
 code {
   font-family: 'Fira Code', monospace;
   font-size: 0.9rem;
+  color: #1A5276;  /* 深蓝代码文字 */
 }
 
 /* ===== 响应式优化 ===== */
@@ -91,127 +85,18 @@ code {
   body {
     padding: 1rem;
   }
-  h1 {
+  h1.title {
     font-size: 2rem;
   }
 }
-/* ===== 文章链接样式 ===== */
-.content-wrapper {
-  max-width: 760px;
-  margin: 0 auto;
-}
 
-.article-card {
-  background: rgba(255,255,255,0.03);
-  border-radius: 8px;
-  padding: 2rem;
-  margin-bottom: 2rem;
-  transition: transform 0.3s ease;
-}
-
-.article-card:hover {
-  transform: translateY(-3px);
-}
-
-.post-preview {
-  border-left: 3px solid var(--secondary);
-  padding-left: 1.5rem;
-  margin: 1.5rem 0;
-}
-
-.post-date {
-  color: #7f8c8d;
-  font-size: 0.9rem;
-  display: block;
-}
-
-.post-title {
-  margin: 0.5rem 0;
-}
-
-.post-link {
+/* ===== 页脚样式 ===== */
+#blog-footer {
+  background: white;
   color: var(--text);
-  text-decoration: none;
-  background: linear-gradient(var(--primary), var(--primary)) no-repeat 0 100%;
-  background-size: 0 2px;
-  transition: background-size 0.3s ease;
-}
-
-.post-link:hover {
-  background-size: 100% 2px;
-}
-
-.post-excerpt {
-  color: #bdc3c7;
-  line-height: 1.7;
-  margin: 0.8rem 0;
-}
-
-/* ===== 卡片链接系统 ===== */
-.card-container {
-  max-width: 760px;
-  margin: 2rem auto;
-}
-
-.post-card {
-  background: rgba(255,255,255,0.03);
-  border: 1px solid #2c3e50;
-  border-radius: 8px;
-  margin: 1.5rem;
-  transition: transform 0.3s ease;
-}
-
-.post-card:hover {
-  transform: translateY(-5px);
-  border-color: var(--secondary);
-}
-
-.card-link {
-  display: block;
-  padding: 1.5rem;
-  text-decoration: none;
-}
-
-.card-header {
-  border-bottom: 2px solid var(--secondary);
-  padding-bottom: 0.8rem;
-  margin-bottom: 1rem;
-}
-
-.card-date {
-  color: #7f8c8d;
-  font-size: 0.85rem;
-  display: block;
-}
-
-.card-title {
-  color: var(--text);
-  margin: 0.5rem 0;
-  font-size: 1.4rem;
-}
-
-.card-excerpt {
-  color: #bdc3c7;
-  line-height: 1.6;
-  margin: 1rem 0;
-}
-
-.card-tag {
-  margin-top: 1rem;
-}
-
-.code-tag {
-  background: var(--secondary);
-  color: var(--background);
-  padding: 0.3rem 0.8rem;
-  border-radius: 12px;
-  font-size: 0.85rem;
-}
-footer {
-  background: rgba(255,255,255,0.05) !important;  /* 透明灰 */
-  color: #bdc3c7 !important;                       /* 浅灰文字 */
   text-align: center;
   padding: 1.5rem;
   margin-top: 3rem;
-  border-top: 2px solid #3498db;                   /* 保留蓝色顶边 */
+  border-top: 3px solid var(--secondary);
+  box-shadow: 0 -2px 4px rgba(0,0,0,0.05);
 }
