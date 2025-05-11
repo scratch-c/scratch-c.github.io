@@ -108,16 +108,20 @@ a {
   background-size: 0 2px;             /* 蓝色下划线动效 */
   transition: color 0.3s, background-size 0.3s;
 }
+/* ===== 统一链接颜色 (深色主题适配) ===== */
+a {
+  color: #87CEEB !important;          /* 天蓝色覆盖所有状态 */
+  text-decoration: none;
+  transition: opacity 0.3s;
+}
 
 a:hover {
-  color: #00BFFF !important;          /* 悬停亮天蓝 */
-  background-size: 100% 2px;          /* 下划线展开 */
+  opacity: 0.8 !important;            /* 悬停透明度变化 */
+  text-decoration: underline;
 }
 
-a:active {
-  color: #1E90FF !important;          /* 点击瞬间颜色 */
-}
-
-a:visited {
-  color: #5D8AA8 !important;          /* 已访问链接 (深天蓝) */
+a:visited,
+a:active,
+a:focus {
+  color: #87CEEB !important;         /* 强制所有状态保持天蓝 */
 }
