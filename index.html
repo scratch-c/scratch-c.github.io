@@ -1,48 +1,34 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <link rel="stylesheet" href="/assets/css/style.css">
-  <link rel="shortcut icon" href="/pics/hdico.ico">
-  <title>scratch_szc's blog</title>
-</head>
 <body>
-  <h1 class="title">scratch_szc's blog</h1>
-  
-  <!-- ===== 新增文章卡片区 ===== -->
-  <section class="article-grid">
-    <!-- 单篇文章卡片 -->
+  <h1 class="title">scratch - c</h1>
+
+  <!-- 文章链接卡片区 -->
+  <section class="card-container">
+    <!-- 卡片模板 -->
     <article class="post-card">
-      <div class="post-header">
-        <time class="post-date">2024/05/20</time>
-        <h2><a href="/articles/test-post.html" class="post-title">博客测试</a></h2>
-      </div>
-      <p class="post-excerpt">欢迎来到我的个人博客！这是我的第一篇测试文章...</p>
-      <div class="post-footer">
-        <a href="/articles/test-post.html" class="read-more">继续阅读 →</a>
-      </div>
+      <a href="/articles/test-post.html" class="card-link">
+        <div class="card-header">
+          <span class="card-date">2024/05/20</span>
+          <h2 class="card-title">博客测试</h2>
+        </div>
+        <p class="card-excerpt">欢迎来到我的个人博客！这是我的第一篇测试文章...</p>
+        <div class="card-tag">
+          <span class="code-tag">含代码示例</span>
+        </div>
+      </a>
     </article>
 
-    <!-- 文章内容卡片 -->
+    <!-- 新增文章卡片 -->
     <article class="post-card">
-      <div class="post-header">
-        <h2>文章内容</h2>
-      </div>
-      <div class="post-content">
-        <p>这里是我的博客正文...</p>
-        <ul>
-          <li>列表项1</li>
-          <li>列表项2</li>
-        </ul>
-        <pre><code class="language-python">print("Hello World!")</code></pre>
-      </div>
+      <a href="/articles/list-demo.html" class="card-link">
+        <div class="card-header">
+          <span class="card-date">2024/05/21</span>
+          <h2 class="card-title">列表测试</h2>
+        </div>
+        <p class="card-excerpt">包含列表项演示内容...</p>
+      </a>
     </article>
   </section>
 
-  <div id="bottem"></div>
-  <script>
-          fetch('/part/bottem.html')
-      .then(response => response.text())
-      .then(html => document.getElementById('bottem').innerHTML = html);
-  </script>
+  <!-- 保持原有底部加载 -->
+  <div id="footer"></div>
 </body>
-</html>
