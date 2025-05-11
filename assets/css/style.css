@@ -100,3 +100,24 @@ footer {
   border-top: 3px solid var(--secondary);
   box-shadow: 0 -2px 4px rgba(0,0,0,0.05);
 }
+/* ===== 超链接系统 ===== */
+a {
+  color: #87CEEB !important;          /* 标准天蓝色 */
+  text-decoration: none;              /* 去除下划线 */
+  background: linear-gradient(#3498db, #3498db) no-repeat 0 100%;
+  background-size: 0 2px;             /* 蓝色下划线动效 */
+  transition: color 0.3s, background-size 0.3s;
+}
+
+a:hover {
+  color: #00BFFF !important;          /* 悬停亮天蓝 */
+  background-size: 100% 2px;          /* 下划线展开 */
+}
+
+a:active {
+  color: #1E90FF !important;          /* 点击瞬间颜色 */
+}
+
+a:visited {
+  color: #5D8AA8 !important;          /* 已访问链接 (深天蓝) */
+}
