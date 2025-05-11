@@ -146,3 +146,64 @@ code {
   line-height: 1.7;
   margin: 0.8rem 0;
 }
+
+/* ===== 卡片链接系统 ===== */
+.card-container {
+  max-width: 760px;
+  margin: 2rem auto;
+}
+
+.post-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid #2c3e50;
+  border-radius: 8px;
+  margin: 1.5rem;
+  transition: transform 0.3s ease;
+}
+
+.post-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--secondary);
+}
+
+.card-link {
+  display: block;
+  padding: 1.5rem;
+  text-decoration: none;
+}
+
+.card-header {
+  border-bottom: 2px solid var(--secondary);
+  padding-bottom: 0.8rem;
+  margin-bottom: 1rem;
+}
+
+.card-date {
+  color: #7f8c8d;
+  font-size: 0.85rem;
+  display: block;
+}
+
+.card-title {
+  color: var(--text);
+  margin: 0.5rem 0;
+  font-size: 1.4rem;
+}
+
+.card-excerpt {
+  color: #bdc3c7;
+  line-height: 1.6;
+  margin: 1rem 0;
+}
+
+.card-tag {
+  margin-top: 1rem;
+}
+
+.code-tag {
+  background: var(--secondary);
+  color: var(--background);
+  padding: 0.3rem 0.8rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+}
