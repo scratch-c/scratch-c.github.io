@@ -1,0 +1,30 @@
+# 题解：B4252 [科大国创杯小学组 2024] 代数
+一道很棒的模拟题。
+
+思路：输入数组 $a$ ， $b$ ，一位一位的计算 `a[i]*b[i]` ，结果加到答案里。
+
+```cpp
+#include<bits/stdc++.h>
+//#pragma GCC optimize(2)
+#define int long long
+#define INF LLONG_MAX
+#define _INF LLONG_MIN
+#define ios ios::sync_with_stdio(0),cout.tie(0),cin.tie(0);
+using namespace std;
+const int N=1000000;
+int a[N],b[N];
+signed main(){
+    ios
+    int n;
+    cin>>n;
+    for(int i=1;i<=n;i++)cin>>a[i];
+    for(int i=1;i<=n;i++)cin>>b[i];
+    int res=0;
+    for(int i=1;i<=n;i++){
+        res+=a[i]*b[i];
+    }
+    cout<<res;
+    return 0;
+}
+```
+记得关注[我](https://www.luogu.com.cn/user/1260767)
