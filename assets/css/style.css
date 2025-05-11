@@ -35,6 +35,32 @@ h2 {
   border-bottom: 2px solid #D6EAF8;  /* 浅蓝色分隔线 */
   padding-bottom: 0.5rem;
 }
+h3 { 
+  color: #87CEEB;  /* 标准天蓝 */
+  font-size: 1.4rem;
+  border-bottom: 2px solid rgba(52,152,219,0.3);
+  padding-bottom: 0.3rem;
+  margin: 1.5rem 0;
+}
+
+h4 {
+  color: #00BFFF;  /* 深天蓝 */
+  font-size: 1.3rem;
+  margin: 1.2rem 0;
+}
+
+h5 {
+  color: #B0E0E6;  /* 浅天蓝 */
+  font-size: 1.2rem;
+  opacity: 0.9;
+}
+
+h6 {
+  color: #87CEEB;
+  font-size: 1.1rem;
+  font-style: italic;
+  opacity: 0.8;
+}
 
 /* ===== 内容区块 ===== */
 .content-section {
