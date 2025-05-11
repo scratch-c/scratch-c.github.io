@@ -207,3 +207,11 @@ code {
   border-radius: 12px;
   font-size: 0.85rem;
 }
+footer {
+  background: rgba(255,255,255,0.05) !important;  /* 透明灰 */
+  color: #bdc3c7 !important;                       /* 浅灰文字 */
+  text-align: center;
+  padding: 1.5rem;
+  margin-top: 3rem;
+  border-top: 2px solid #3498db;                   /* 保留蓝色顶边 */
+}
