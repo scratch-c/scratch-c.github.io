@@ -1,5 +1,0 @@
-title: 我的博客       # 博客标题
-description: 个人博客 # 描述
-theme: minima        # 默认主题（GitHub 内置支持）
-plugins:
-  - jekyll-feed      # 启用 RSS 订阅
