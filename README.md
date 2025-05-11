@@ -5,6 +5,5 @@
 
 scratch-c.github.io
 
-![](https://img.picui.cn/free/2025/04/30/681210805e58a.png)
 
 博客~~部分~~全部使用ai
