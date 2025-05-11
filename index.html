@@ -3,21 +3,17 @@
 <head>
   <link rel="stylesheet" href="/assets/css/style.css">
   <link rel="shortcut icon" href="/pics/hdico.ico">
-    <div id="up"></div>
   <title>scratch_szc's blog</title>
 </head>
 <body>
  <body>
   <h1 class="title">scratch_szc</h1>
-   <p>[test blog](\blogs\test.md)<p>
+   <p><a href="/blogs/test">test blog(2025/5/11)</a></p>
   <div id="bottem"></div>
   <script>
      fetch('/part/bottem.html')
       .then(response => response.text())
       .then(html => document.getElementById('bottem').innerHTML = html);
-         fetch('/part/up.html')
-      .then(response => response.text())
-      .then(html => document.getElementById('up').innerHTML = html);
   </script>
 </body>
 </html>
