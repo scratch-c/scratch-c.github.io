@@ -1,111 +1,97 @@
-/* ===== 基础美化 ===== */
+/* ===== 深色极简博客主题 ===== */
 :root {
-  --primary-color: #2c3e50;   /* 主色调 */
-  --secondary-color: #3498db; /* 强调色 */
-  --text-color: #333;         /* 正文颜色 */
-  --background: #f8f9fa;      /* 背景色 */
-  --dark-bg: #1a1a1a;         /* 暗黑模式背景 */
+  --primary: #9b59b6;   /* 紫色标题 */
+  --secondary: #3498db; /* 蓝色横线/强调色 */
+  --text: #ecf0f1;       /* 白色正文 */
+  --background: #1a1a1a; /* 深色背景 */
+  --code-bg: #2c3e50;    /* 代码块背景 */
 }
 
-/* 全局样式 */
+/* ===== 全局样式 ===== */
 body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  line-height: 1.6;
+  color: var(--text);
+  background: var(--background);
   max-width: 800px;
   margin: 0 auto;
   padding: 2rem;
-  line-height: 1.6;
-  font-family: 'Segoe UI', system-ui, sans-serif; /* 现代字体 */
-  color: var(--text-color);
-  background: var(--background);
 }
 
-/* 暗黑模式适配 */
-@media (prefers-color-scheme: dark) {
-  body {
-    color: #e0e0e0;
-    background: var(--dark-bg);
-  }
+/* ===== 标题系统 ===== */
+h1 {
+  color: var(--primary);
+  font-size: 2.5rem;
+  margin: 2rem 0 0.5rem;
+  position: relative;
+  padding-bottom: 0.5rem;
 }
 
-/* ===== 标题美化 ===== */
-h1, h2, h3 {
-  color: var(--primary-color);
-  margin-top: 2rem;
-  border-bottom: 2px solid var(--secondary-color);
-  padding-bottom: 0.3em;
+h1::after {
+  content: "";
+  display: block;
+  width: 120px;
+  height: 3px;
+  background: var(--secondary);
+  position: absolute;
+  bottom: 0;
+  left: 0;
 }
 
-/* ===== 导航栏 ===== */
-.navbar {
-  background: var(--primary-color);
-  padding: 1rem 2rem;
-  margin: -2rem -2rem 2rem; /* 抵消 body 的 padding */
+h2 {
+  color: var(--secondary);
+  font-size: 1.8rem;
+  margin: 2rem 0 1rem;
 }
 
-.navbar a {
-  color: white !important;
-  margin-right: 1.5rem;
-  text-decoration: none;
-  transition: opacity 0.3s;
-}
-
-.navbar a:hover {
-  opacity: 0.8;
-}
-
-/* ===== 文章卡片 ===== */
-.post {
-  background: white;
-  padding: 2rem;
-  margin-bottom: 2rem;
+/* ===== 内容区块 ===== */
+.content-section {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background: rgba(255,255,255,0.05);
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  transition: transform 0.3s;
 }
 
-.post:hover {
-  transform: translateY(-5px);
+/* ===== 列表样式 ===== */
+ul {
+  list-style: none;
+  padding-left: 1.5rem;
 }
 
-/* ===== 代码块 ===== */
+li {
+  position: relative;
+  margin: 0.8rem 0;
+  padding-left: 1.2rem;
+}
+
+li::before {
+  content: "•";
+  color: var(--secondary);
+  position: absolute;
+  left: 0;
+  font-size: 1.2rem;
+}
+
+/* ===== 代码区块 ===== */
 pre {
-  background: #f4f4f4;
+  background: var(--code-bg);
   padding: 1rem;
   border-radius: 6px;
+  border-left: 4px solid var(--secondary);
   overflow-x: auto;
 }
 
 code {
   font-family: 'Fira Code', monospace;
-  color: #c7254e;
+  font-size: 0.9rem;
 }
 
-/* ===== 图片和响应式 ===== */
-img {
-  max-width: 100%;
-  height: auto;
-  border-radius: 4px;
-}
-
-/* 移动端优化 */
+/* ===== 响应式优化 ===== */
 @media (max-width: 768px) {
   body {
     padding: 1rem;
   }
-  .navbar {
-    padding: 1rem;
+  h1 {
+    font-size: 2rem;
   }
-}
-
-/* ===== 按钮和交互 ===== */
-.button {
-  display: inline-block;
-  padding: 0.5em 1em;
-  background: var(--secondary-color);
-  color: white !important;
-  border-radius: 4px;
-  text-decoration: none;
-}
-
-.button:hover {
-  filter: brightness(1.1);
 }
