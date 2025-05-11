@@ -1,4 +1,12 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="/assets/css/style.css">
+  <link rel="shortcut icon" href="/pics/hdico.ico">
+  <title>scratch_szc's blog</title>
+</head>
 <body>
+ <body>
   <h1 class="title">scratch - c</h1>
 
   <!-- 文章链接卡片区 -->
@@ -28,7 +36,11 @@
       </a>
     </article>
   </section>
-
-  <!-- 保持原有底部加载 -->
-  <div id="footer"></div>
+  <div id="bottem"></div>
+  <script>
+          fetch('/part/bottem.html')
+      .then(response => response.text())
+      .then(html => document.getElementById('bottem').innerHTML = html);
+  </script>
 </body>
+</html>
