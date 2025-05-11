@@ -1,11 +1,27 @@
-<link rel="stylesheet" href="/assets/css/style.css">
 <!DOCTYPE html>
 <html>
 <head>
   <title>我的博客</title>
+  <!-- 引入 Markdown 渲染库 -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown.min.css">
+  <style>
+    .markdown-body { max-width: 800px; margin: 0 auto; padding: 20px; }
+  </style>
 </head>
 <body>
-  <h1>欢迎来到我的博客！</h1>
-  <p>test</p>
+  <nav>
+    <a href="#" onclick="loadBlog('blogs/test.md')">查看博客</a>
+  </nav>
+  <div id="blog-content" class="markdown-body"></div>
+
+  <script>
+    // 加载并渲染 Markdown
+    async function loadBlog(mdPath) {
+      const response = await fetch(mdPath);
+      const mdText = await response.text();
+      document.getElementById('blog-content').innerHTML = marked.parse(mdText);
+    }
+  </script>
 </body>
 </html>
