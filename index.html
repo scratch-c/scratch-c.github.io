@@ -7,9 +7,15 @@
 </head>
 <body>
  <body>
+   <div id="head"></div>
   <h1>scratch_szc's blog</h1>
    <a href="/blogs/bendidpsk">教你本地部署deepseek(2025/5/11 21:00)</a><br>
    <a href="/blogs/b4252">洛谷题解B4252(2025/5/11 21:00)</a><br>
   <div id="bottem"></div>
 </body>
+    <script>
+       fetch('part/head.html')
+      .then(response => response.text())
+      .then(html => document.getElementById('head').innerHTML = html);
+  </script>
 </html>
