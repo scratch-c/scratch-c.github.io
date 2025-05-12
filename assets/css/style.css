@@ -151,3 +151,33 @@ a:active,
 a:focus {
   color: #87CEEB !important;         /* 强制所有状态保持天蓝 */
 }
+/* style.css 修改建议（仅保留结构相关样式） */
+.navbar {
+  /* 移除背景色定义 */
+  padding: 1rem;
+}
+
+.navbar-nav {
+  list-style: none;
+  display: flex;
+  gap: 1rem;
+}
+
+.nav-link {
+  /* 移除颜色定义 */
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  /* 继承现有颜色方案 */
+  color: inherit;
+  background-color: inherit;
+}
+
+.nav-link:hover {
+  /* 继承现有悬停效果 */
+  opacity: 0.8;
+}
+
+.nav-link.active {
+  /* 使用现有高亮样式 */
+  font-weight: bold;
+}
