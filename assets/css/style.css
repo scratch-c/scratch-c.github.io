@@ -156,6 +156,7 @@ a:focus {
   background-color: inherit; /* 继承父级背景 */
   padding: 12px 0;
   margin: 0 auto;
+  width: 100%;
 }
 
 .nav-list {
@@ -165,6 +166,8 @@ a:focus {
   padding: 0;
   justify-content: center; /* 水平居中 */
   gap: 20px; /* 按钮间距 */
+  flex-direction: row !important; /* 明确横向排列 */
+  white-space: nowrap; /* 防止换行 */
 }
 
 .nav-btn {
@@ -201,3 +204,8 @@ a:focus {
   height: 2px;
   background: currentColor;
 }
+.nav-item {
+  display: inline-block !important; /* 双重保障 */
+  float: none !important; /* 清除可能的浮动影响 */
+}
+
