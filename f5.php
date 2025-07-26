@@ -17,6 +17,17 @@ ob_end_clean();
 $content = str_replace('href="/', 'href="./', $content);
 $content = str_replace('src="/', 'src="./', $content);
 
-file_put_contents("index.html", $content);
-echo "Static page generated successfully!";
+// Generate all static pages
+$pages = ['/', '/start-page.html', '/admin/login.html', '/feed.html'];
+foreach ($pages as $page) {
+    $_SERVER['REQUEST_URI'] = $page;
+    ob_start();
+    include 'index.php';
+    $content = ob_get_contents();
+    ob_end_clean();
+    $content = str_replace('href="/', 'href="./', $content);
+    $content = str_replace('src="/', 'src="./', $content);
+    file_put_contents(ltrim($page, '/') ?: 'index.html', $content);
+}
+echo "Static pages generated successfully!";
 ?>
