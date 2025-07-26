@@ -69,9 +69,9 @@ class Cookie
         self::$prefix = md5($url);
         $parsed = parse_url($url);
 
-        self::$domain = $parsed['host'];
+        self::$domain = $parsed['host'] ?? '';
         /** 在路径后面强制加上斜杠 */
-        self::$path = empty($parsed['path']) ? '/' : Common::url(null, $parsed['path']);
+        self::$path = empty($parsed['path'] ?? '') ? '/' : Common::url(null, $parsed['path'] ?? '');
     }
 
     /**
