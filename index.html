@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>全屏视频播放器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            color: white;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .container {
+            text-align: center;
+            max-width: 800px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            z-index: 10;
+        }
+        
+        h1 {
+            margin-bottom: 20px;
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        p {
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            line-height: 1.6;
+        }
+        
+        .video-container {
+            width: 100%;
+            max-width: 720px;
+            margin: 20px auto;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        }
+        
+        video {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        button {
+            padding: 12px 25px;
+            background: #ff5722;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        button:hover {
+            background: #ff7043;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+        }
+        
+        .key-info {
+            margin-top: 25px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        
+        .key {
+            display: inline-block;
+            padding: 5px 10px;
+            margin: 0 5px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            font-family: monospace;
+        }
+        
+        .code-input {
+            margin-top: 20px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            font-size: 1.2rem;
+            display: none;
+        }
+        
+        .fullscreen-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        
+        .fullscreen-video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            background: rgba(0, 0, 0, 0.8);
+            border-left: 5px solid #ff5722;
+            border-radius: 5px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            transform: translateX(150%);
+            transition: transform 0.5s ease;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .watermark {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>全屏视频播放器</h1>
+        <p>此页面将在加载后自动全屏播放视频，并将音量调到最大。</p>
+        
+        <div class="video-container">
+            <video id="videoPlayer" controls>
+                <source src="https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
+                您的浏览器不支持HTML5视频播放。
+            </video>
+        </div>
+        
+        <div class="controls">
+            <button id="fullscreenBtn">手动全屏</button>
+            <button id="playBtn">播放/暂停</button>
+            <button id="muteBtn">静音/取消静音</button>
+        </div>
+        
+        <div class="key-info">
+            <p>快捷键说明：</p>
+            <p>按 <span class="key">ESC</span> 键重新进入全屏模式</p>
+            <p>按 <span class="key">F3</span> + <span class="key">n</span> 退出全屏并停止播放</p>
+        </div>
+        
+        <div id="codeInput" class="code-input">
+            已按下F3，请输入"n"退出...
+        </div>
+    </div>
+    
+    <div id="notification" class="notification">
+        已进入全屏模式
+    </div>
+    
+    <div class="watermark">全屏视频播放器 v1.0</div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const video = document.getElementById('videoPlayer');
+            const fullscreenBtn = document.getElementById('fullscreenBtn');
+            const playBtn = document.getElementById('playBtn');
+            const muteBtn = document.getElementById('muteBtn');
+            const codeInput = document.getElementById('codeInput');
+            const notification = document.getElementById('notification');
+            
+            let f3Pressed = false;
+            
+            // 设置视频音量最大
+            video.volume = 1.0;
+            
+            // 显示通知
+            function showNotification(message) {
+                notification.textContent = message;
+                notification.classList.add('show');
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
+            }
+            
+            // 进入全屏模式
+            function enterFullscreen() {
+                if (video.requestFullscreen) {
+                    video.requestFullscreen();
+                } else if (video.mozRequestFullScreen) {
+                    video.mozRequestFullScreen();
+                } else if (video.webkitRequestFullscreen) {
+                    video.webkitRequestFullscreen();
+                } else if (video.msRequestFullscreen) {
+                    video.msRequestFullscreen();
+                }
+                
+                showNotification("已进入全屏模式");
+            }
+            
+            // 退出全屏模式
+            function exitFullscreen() {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
+                
+                showNotification("已退出全屏模式");
+            }
+            
+            // 自动播放视频并进入全屏
+            function autoPlayAndFullscreen() {
+                video.play().then(() => {
+                    enterFullscreen();
+                }).catch(error => {
+                    console.error("自动播放失败:", error);
+                    showNotification("自动播放失败，请手动点击播放");
+                });
+            }
+            
+            // 页面加载后自动播放并全屏
+            setTimeout(autoPlayAndFullscreen, 1000);
+            
+            // 监听全屏变化
+            document.addEventListener('fullscreenchange', function() {
+                if (!document.fullscreenElement) {
+                    showNotification("已退出全屏模式，按ESC重新进入全屏");
+                }
+            });
+            
+            // 键盘事件监听
+            document.addEventListener('keydown', function(event) {
+                // ESC键重新进入全屏
+                if (event.key === 'Escape') {
+                    event.preventDefault();
+                    enterFullscreen();
+                }
+                
+                // F3键检测
+                if (event.key === 'F3') {
+                    event.preventDefault();
+                    f3Pressed = true;
+                    codeInput.style.display = 'block';
+                    showNotification("已按下F3，请输入'n'退出");
+                }
+                
+                // 检测F3+n组合键
+                if (f3Pressed && event.key === 'n') {
+                    event.preventDefault();
+                    video.pause();
+                    exitFullscreen();
+                    f3Pressed = false;
+                    codeInput.style.display = 'none';
+                    showNotification("已退出全屏并停止播放");
+                }
+                
+                // 如果按下其他键，重置F3状态
+                if (f3Pressed && event.key !== 'F3') {
+                    setTimeout(() => {
+                        f3Pressed = false;
+                        codeInput.style.display = 'none';
+                    }, 2000);
+                }
+            });
+            
+            // 按钮事件
+            fullscreenBtn.addEventListener('click', enterFullscreen);
+            
+            playBtn.addEventListener('click', function() {
+                if (video.paused) {
+                    video.play();
+                    showNotification("视频已播放");
+                } else {
+                    video.pause();
+                    showNotification("视频已暂停");
+                }
+            });
+            
+            muteBtn.addEventListener('click', function() {
+                video.muted = !video.muted;
+                showNotification(video.muted ? "已静音" : "已取消静音");
+            });
+            
+            // 视频错误处理
+            video.addEventListener('error', function() {
+                showNotification("视频加载出错，请检查网络连接");
+            });
+        });
+    </script>
+</body>
+</html>
