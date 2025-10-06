@@ -1,2 +1,1 @@
-# scratch-c.github.io
-never gonna give you up
+auto never gonna give you up :)
