@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>幸运大转盘</title>
+  <!-- Tailwind CSS v3 -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome -->
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <!-- 统一的 Tailwind 配置 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#FF6B35',
+            secondary: '#4CB9E7',
+            accent: '#FFD166',
+            dark: '#2C3E50',
+            light: '#F8F9FA'
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .text-shadow { text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3); }
+      .wheel-pointer { clip-path: polygon(50% 0%, 35% 100%, 65% 100%); }
+      .gradient-text {
+        background-clip: text;
+        -webkit-background-clip: text;
+        color: transparent;
+        background-image: linear-gradient(45deg, #FF6B35, #FFD166);
+      }
+    }
+  </style>
+  <style>
+    /* 自定义样式 */
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+    
+    .wheel-container {
+      position: relative;
+      width: 100%;
+      max-width: 500px;
+      aspect-ratio: 1/1;
+    }
+    
+    .wheel {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      border-radius: 50%;
+      overflow: hidden;
+      transition: transform 5s cubic-bezier(0.1, 0.05, 0.15, 1);
+      transform: rotate(0deg);
+      box-shadow: 0 0 0 10px rgba(255, 255, 255, 0.1), 
+                  0 0 20px rgba(0, 0, 0, 0.2);
+    }
+    
+    .wheel-center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 60px;
+      height: 60px;
+      background: #fff;
+      border-radius: 50%;
+      z-index: 10;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .wheel-pointer {
+      position: absolute;
+      top: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 40px;
+      height: 40px;
+      background: #FFD166;
+      z-index: 20;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+    }
+    
+    .wheel-slice {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      transform-origin: center;
+      clip-path: polygon(50% 50%, 100% 0, 100% 100%);
+    }
+    
+    .wheel-slice-text {
+      position: absolute;
+      width: 50%;
+      height: 50%;
+      top: 0;
+      right: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transform-origin: bottom left;
+      font-weight: bold;
+      color: white;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+      font-size: 1.2rem;
+      padding-right: 15%;
+      box-sizing: border-box;
+    }
+    
+    .prize-item { transition: all 0.3s ease; }
+    .prize-item:hover { transform: translateY(-3px); }
+    
+    .spin-button { transition: all 0.3s ease; position: relative; overflow: hidden; }
+    .spin-button:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2); }
+    .spin-button:active { transform: translateY(0); }
+    .result-popup { animation: pop-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    @keyframes pop-in { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .confetti {
+      position: fixed; width: 10px; height: 10px;
+      background-color: #f00; opacity: 0.8;
+      animation: confetti-fall 3s ease-in-out forwards; z-index: 1000;
+    }
+    @keyframes confetti-fall {
+      0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+    }
+  </style>
+</head>
+<body class="font-sans text-light">
+  <div class="container mx-auto px-4 py-8 max-w-6xl">
+    <header class="text-center mb-8">
+      <h1 class="text-4xl md:text-5xl font-bold mb-2 gradient-text">幸运大转盘</h1>
+    </header>
+    <div class="flex flex-col lg:flex-row gap-8 items-center lg:items-start">
+      <div class="lg:w-2/3 flex flex-col items-center">
+        <div class="wheel-container mb-6">
+          <div class="wheel-pointer"></div>
+          <div id="wheel" class="wheel"></div>
+          <div class="wheel-center">
+            <i class="fa fa-trophy text-primary text-2xl"></i>
+          </div>
+        </div>
+        <div class="flex flex-col sm:flex-row gap-4 w-full max-w-xs">
+          <button id="spin-btn" class="spin-button bg-primary hover:bg-primary/90 text-white font-bold py-3 px-8 rounded-full text-xl shadow-lg flex-1">
+            <i class="fa fa-play mr-2"></i>开始抽奖
+          </button>
+          <button id="reset-btn" class="bg-dark hover:bg-dark/90 text-white font-bold py-3 px-8 rounded-full text-xl shadow-lg flex-1">
+            <i class="fa fa-refresh mr-2"></i>重置
+          </button>
+        </div>
+      </div>
+      <div class="lg:w-1/3 bg-white/10 backdrop-blur-md rounded-xl p-6 shadow-xl w-full">
+        <h2 class="text-2xl font-bold mb-4 flex items-center">
+          <i class="fa fa-cog mr-2"></i>奖项设置
+        </h2>
+        <div id="prize-list" class="space-y-4 mb-6 max-h-[400px] overflow-y-auto pr-2"></div>
+        <div class="bg-white/5 rounded-lg p-4">
+          <h3 class="text-lg font-semibold mb-3">添加新奖项</h3>
+          <div class="space-y-3">
+            <div>
+              <label for="new-prize-name" class="block text-sm font-medium mb-1">奖项名称</label>
+              <input type="text" id="new-prize-name" class="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-white" placeholder="例如：谢谢参与">
+            </div>
+            <button id="add-prize-btn" class="w-full bg-secondary hover:bg-secondary/90 text-white font-medium py-2 px-4 rounded-lg">
+              <i class="fa fa-plus mr-1"></i>添加奖项
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="result-popup" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 hidden">
+    <div class="result-popup bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl transform transition-all">
+      <div class="text-center">
+        <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-accent flex items-center justify-center">
+          <i class="fa fa-trophy text-4xl text-white"></i>
+        </div>
+        <h2 class="text-3xl font-bold text-dark mb-2">恭喜中奖！</h2>
+        <p class="text-xl text-gray-600 mb-2">您获得了：</p>
+        <p id="winning-prize" class="text-2xl font-bold text-primary mb-6">一等奖</p>
+        <button id="close-result" class="bg-primary hover:bg-primary/90 text-white font-bold py-3 px-8 rounded-full text-lg">
+          确定
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 全局变量
+    let prizes = [];
+    let isSpinning = false;
+    let currentRotation = 0;
+    
+    // 颜色数组
+    const colors = [
+      '#FF6B35', '#4CB9E7', '#FFD166', '#06D6A0', '#118AB2', 
+      '#073B4C', '#EF476F', '#FFD166'
+    ];
+    
+    // DOM 元素
+    const wheelEl = document.getElementById('wheel');
+    const prizeListEl = document.getElementById('prize-list');
+    const spinBtn = document.getElementById('spin-btn');
+    const resetBtn = document.getElementById('reset-btn');
+    const resultPopup = document.getElementById('result-popup');
+    const winningPrizeEl = document.getElementById('winning-prize');
+    const closeResultBtn = document.getElementById('close-result');
+    const addPrizeBtn = document.getElementById('add-prize-btn');
+    const newPrizeNameInput = document.getElementById('new-prize-name');
+    
+    // 初始化
+    function init() {
+      // 添加初始奖项
+      addPrize('一等奖');
+      addPrize('二等奖');
+      addPrize('三等奖');
+      addPrize('谢谢参与');
+      
+      updatePrizeList();
+      updateWheel();
+      
+      spinBtn.addEventListener('click', spinWheel);
+      resetBtn.addEventListener('click', resetWheel);
+      closeResultBtn.addEventListener('click', () => resultPopup.classList.add('hidden'));
+      addPrizeBtn.addEventListener('click', addNewPrize);
+    }
+    
+    // 添加新奖项
+    function addPrize(name) {
+      prizes.push({
+        id: Date.now(),
+        name
+      });
+    }
+    
+    // 添加新奖项（从表单）
+    function addNewPrize() {
+      const name = newPrizeNameInput.value.trim();
+      
+      if (!name) { 
+        alert('请输入奖项名称'); 
+        return; 
+      }
+
+      addPrize(name);
+      
+      newPrizeNameInput.value = '';
+      
+      updatePrizeList();
+      updateWheel();
+    }
+    
+    // 更新奖项列表UI
+    function updatePrizeList() {
+      prizeListEl.innerHTML = prizes.length === 0 ? 
+        `<div class="text-center py-8 text-white/60"><i class="fa fa-info-circle text-2xl mb-2"></i><p>暂无奖项，请添加奖项</p></div>` : 
+        '';
+      
+      prizes.forEach((prize, index) => {
+        const prizeEl = document.createElement('div');
+        prizeEl.className = 'prize-item bg-white/5 rounded-lg p-4';
+        prizeEl.innerHTML = `
+          <div class="flex justify-between items-start mb-3">
+            <div class="flex items-center">
+              <div class="w-4 h-4 rounded-full mr-2" style="background-color: ${colors[index % colors.length]}"></div>
+              <h4 class="font-medium">${prize.name}</h4>
+            </div>
+            <span class="text-sm bg-white/10 px-2 py-1 rounded">概率: ${(100 / prizes.length).toFixed(1)}%</span>
+          </div>
+          <div class="mt-3 flex justify-end">
+            <button class="delete-prize text-white/60 hover:text-red-400" data-prize-id="${prize.id}">
+              <i class="fa fa-trash"></i> 删除
+            </button>
+          </div>
+        `;
+        prizeListEl.appendChild(prizeEl);
+        
+        prizeEl.querySelector('.delete-prize').addEventListener('click', (e) => {
+          const prizeId = parseInt(e.target.closest('.delete-prize').dataset.prizeId);
+          prizes = prizes.filter(prize => prize.id !== prizeId);
+          
+          updatePrizeList();
+          updateWheel();
+        });
+      });
+    }
+    
+    // 更新转盘UI
+    function updateWheel() {
+      wheelEl.innerHTML = '';
+      
+      if (prizes.length === 0) return;
+      
+      const sliceAngle = 360 / prizes.length; // 每个扇区的角度（等概率）
+      let startAngle = 0;
+      
+      prizes.forEach((prize, index) => {
+        const sliceEl = document.createElement('div');
+        sliceEl.className = 'wheel-slice';
+        sliceEl.style.backgroundColor = colors[index % colors.length];
+        sliceEl.style.transform = `rotate(${startAngle}deg)`;
+        
+        const textEl = document.createElement('div');
+        textEl.className = 'wheel-slice-text';
+        textEl.style.transform = `rotate(${sliceAngle / 2}deg)`;
+        textEl.textContent = prize.name;
+        
+        sliceEl.appendChild(textEl);
+        wheelEl.appendChild(sliceEl);
+        
+        startAngle += sliceAngle;
+      });
+    }
+    
+    // 旋转转盘
+    function spinWheel() {
+      if (isSpinning) return;
+      if (prizes.length === 0) {
+        alert('请先添加奖项');
+        return;
+      }
+      
+      isSpinning = true;
+      spinBtn.disabled = true;
+      spinBtn.classList.add('opacity-70', 'cursor-not-allowed');
+      
+      // 等概率随机选择一个奖项
+      const randomIndex = Math.floor(Math.random() * prizes.length);
+      const winningPrize = prizes[randomIndex];
+      
+      // 计算目标旋转角度（多转几圈增加视觉效果）
+      const extraRotations = 5 + Math.random() * 3; // 5-8圈
+      const targetRotation = currentRotation + extraRotations * 360 + getWinningAngle(winningPrize);
+      
+      // 应用旋转动画
+      wheelEl.style.transform = `rotate(${targetRotation}deg)`;
+      
+      // 动画结束后显示结果
+      setTimeout(() => {
+        isSpinning = false;
+        spinBtn.disabled = false;
+        spinBtn.classList.remove('opacity-70', 'cursor-not-allowed');
+        currentRotation = targetRotation;
+        
+        // 显示中奖结果
+        winningPrizeEl.textContent = winningPrize.name;
+        resultPopup.classList.remove('hidden');
+        
+        // 创建彩带动画
+        createConfetti();
+      }, 5000);
+    }
+    
+    // 计算中奖奖项对应的角度
+    function getWinningAngle(winningPrize) {
+      const sliceAngle = 360 / prizes.length;
+      const prizeIndex = prizes.findIndex(prize => prize.id === winningPrize.id);
+      
+      // 中奖扇区的中心角度
+      return prizeIndex * sliceAngle + sliceAngle / 2;
+    }
+    
+    // 重置转盘
+    function resetWheel() {
+      if (isSpinning) return;
+      
+      wheelEl.style.transform = 'rotate(0deg)';
+      currentRotation = 0;
+      resultPopup.classList.add('hidden');
+    }
+    
+    // 创建彩带动画
+    function createConfetti() {
+      const confettiCount = 150;
+      const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff', '#ffffff'];
+      
+      for (let i = 0; i < confettiCount; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        
+        // 随机颜色、位置和大小
+        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        confetti.style.left = `${Math.random() * 100}vw`;
+        confetti.style.width = `${Math.random() * 10 + 5}px`;
+        confetti.style.height = `${Math.random() * 3 + 2}px`;
+        confetti.style.animationDuration = `${Math.random() * 3 + 2}s`;
+        
+        document.body.appendChild(confetti);
+        
+        // 动画结束后移除
+        setTimeout(() => {
+          confetti.remove();
+        }, 3000);
+      }
+    }
+    
+    // 页面加载完成后初始化
+    window.addEventListener('load', init);
+  </script>
+</body>
+</html>
