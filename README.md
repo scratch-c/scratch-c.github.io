@@ -1,1 +1,1 @@
-- [诈骗](scratch-c.github.io/zhapian.html)
+- [诈骗](scratch-c.github.io/zhapian.html](https://scratch-c.github.io/zhapian.html)
