@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markdown 转 HTML 源码</title>
+    <!-- 引入 marked.js 库用于 Markdown 解析 -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- 引入 highlight.js 库用于 HTML 源码高亮 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js/styles/github.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js/highlight.min.js"></script>
+    
+    <style>
+        /* 基础样式设置 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+            background-color: #f0f2f5;
+            color: #333;
+            overflow: hidden; /* 禁止页面整体滚动 */
+            height: 100vh; /* 让 body 占满整个视口高度 */
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        header {
+            background: #2c3e50;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .editor-wrapper {
+            display: flex;
+            flex: 1; /* 让编辑器区域占满剩余空间 */
+            overflow: hidden;
+        }
+
+        /* 编辑器和预览区的公共样式 */
+        .editor-panel, .preview-panel {
+            flex: 1;
+            overflow-y: auto; /* 允许垂直滚动 */
+            padding: 20px;
+            height: 100%;
+        }
+
+        .editor-panel {
+            background-color: #2d2d2d; /* 深色背景 */
+            color: #ccc; /* 浅色文字 */
+        }
+
+        .preview-panel {
+            background-color: #f8f8f8; /* 浅灰色背景，适合看代码 */
+            border-left: 1px solid #ddd;
+        }
+
+        /* 文本区域样式 */
+        #markdown-input {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: transparent;
+            color: inherit;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 16px;
+            resize: none;
+            outline: none;
+        }
+
+        /* 预览区样式 - 重点修改这里 */
+        #html-preview {
+            width: 100%;
+            height: 100%;
+            font-family: 'Consolas', 'Monaco', monospace; /* 使用等宽字体 */
+            font-size: 14px;
+            white-space: pre-wrap; /* 允许长代码自动换行 */
+            word-break: break-all;
+        }
+        
+        /* 按钮样式 */
+        .action-buttons {
+            text-align: center;
+            padding: 10px;
+            background: #f8f8f8;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .action-buttons button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            margin: 0 5px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .action-buttons button:hover {
+            background: #2980b9;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Markdown 转 HTML 源码</h1>
+            <p>左侧输入 Markdown，右侧实时显示 HTML 源代码。</p>
+        </header>
+
+        <div class="action-buttons">
+            <button id="btn-copy">复制 HTML</button>
+        </div>
+
+        <div class="editor-wrapper">
+            <!-- Markdown 输入区 -->
+            <div class="editor-panel">
+                <textarea id="markdown-input" placeholder="在这里输入 Markdown 内容..."></textarea>
+            </div>
+
+            <!-- HTML 源码预览区 -->
+            <div class="preview-panel">
+                <pre><code id="html-preview" class="language-html"></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 获取 DOM 元素
+        const markdownInput = document.getElementById('markdown-input');
+        const htmlPreview = document.getElementById('html-preview');
+        const btnCopy = document.getElementById('btn-copy');
+
+        // 初始化 marked.js
+        marked.setOptions({
+            breaks: true, // 将回车符转换为 <br>
+            gfm: true     // 启用 GitHub Flavored Markdown
+        });
+
+        // 核心转换函数
+        function convertMarkdown() {
+            const markdownText = markdownInput.value;
+            // 使用 marked.js 将 Markdown 转换为 HTML 字符串
+            const htmlContent = marked.parse(markdownText);
+            
+            // 【主要改动点 1】
+            // 使用 textContent 而不是 innerHTML，确保 HTML 标签被当作文本显示
+            htmlPreview.textContent = htmlContent; 
+
+            // 【主要改动点 2】
+            // 对显示的 HTML 源码进行语法高亮
+            hljs.highlightElement(htmlPreview);
+        }
+
+        // 【新增功能】复制 HTML 代码
+        function copyHtmlToClipboard() {
+            // 从 preview 元素中获取文本内容
+            const htmlContent = htmlPreview.textContent;
+            navigator.clipboard.writeText(htmlContent).then(() => {
+                alert('HTML 代码已成功复制到剪贴板！');
+            }).catch(err => {
+                console.error('无法复制文本: ', err);
+                alert('复制失败，请手动复制。');
+            });
+        }
+
+        // 绑定事件监听
+        // 1. 输入框内容变化时触发转换
+        markdownInput.addEventListener('input', convertMarkdown);
+
+        // 2. 复制按钮点击事件
+        btnCopy.addEventListener('click', copyHtmlToClipboard);
+
+        // 初始化编辑器内容（可选）
+        markdownInput.value = `# Markdown 实时编辑器
+
+这是一个使用 HTML, CSS 和 JavaScript 构建的简单 Markdown 编辑器。
+
+## 特性
+
+- **实时预览**：所见即所得
+- **语法高亮**：支持多种编程语言
+- **GitHub Flavored Markdown**：支持表格、任务列表等
+
+## 使用示例
+
+### 代码块
+\`\`\`javascript
+function greeting(name) {
+    return \`Hello, \${name}!\`;
+}
+console.log(greeting('World'));
+\`\`\`
+
+### 表格
+
+| 姓名 | 年龄 | 城市 |
+|------|------|------|
+| 张三 | 25   | 北京 |
+| 李四 | 30   | 上海 |
+
+> 引用文本：Markdown 是一种轻量级标记语言。
+`;
+
+        // 页面加载完成后立即执行一次转换
+        window.addEventListener('load', convertMarkdown);
+    </script>
+</body>
+</html>
