@@ -1,5 +1,5 @@
 # 小工具
-- [诈骗](scratch-c.github.io/zhapian.html)
+- [诈骗](https://scratch-c.github.io/zhapian.html)
 
 
 
