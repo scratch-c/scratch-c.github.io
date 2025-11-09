@@ -54,30 +54,11 @@
       left: 50%;
       transform: translateX(-50%);
       width: 40px;
-      height: 40px;
+      height: 60px;
       background: #FFD166;
       z-index: 20;
       filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
-      clip-path: polygon(50% 0%, 35% 100%, 65% 100%);
-    }
-    
-    .wheel-slice {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      top: 0;
-      left: 0;
-      transform-origin: center;
-      overflow: hidden;
-    }
-    
-    .wheel-slice-inner {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      top: 0;
-      left: 0;
-      transform-origin: center;
+      clip-path: polygon(0% 0%, 100% 0%, 50% 100%);
     }
     
     .wheel-slice-text {
@@ -165,12 +146,9 @@
           </div>
         </div>
         
-        <div class="flex flex-col sm:flex-row gap-4 w-full max-w-xs">
-          <button id="spin-btn" class="spin-button bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-8 rounded-full text-xl shadow-lg flex-1">
+        <div class="w-full max-w-xs">
+          <button id="spin-btn" class="spin-button bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-8 rounded-full text-xl shadow-lg w-full">
             <i class="fa fa-play mr-2"></i>开始抽奖
-          </button>
-          <button id="reset-btn" class="bg-gray-700 hover:bg-gray-800 text-white font-bold py-3 px-8 rounded-full text-xl shadow-lg flex-1">
-            <i class="fa fa-refresh mr-2"></i>重置
           </button>
         </div>
       </div>
@@ -233,7 +211,6 @@
     const wheelEl = document.getElementById('wheel');
     const prizeListEl = document.getElementById('prize-list');
     const spinBtn = document.getElementById('spin-btn');
-    const resetBtn = document.getElementById('reset-btn');
     const resultPopup = document.getElementById('result-popup');
     const winningPrizeEl = document.getElementById('winning-prize');
     const closeResultBtn = document.getElementById('close-result');
@@ -243,17 +220,16 @@
     // 初始化
     function init() {
       // 添加初始奖项
-      addPrize('1');
-      addPrize('2');
-      addPrize('3');
-      addPrize('4');
+      addPrize('选项一');
+      addPrize('选项二');
+      addPrize('选项三');
+      addPrize('选项四');
       
       updatePrizeList();
       updateWheel();
       
       // 事件监听
       spinBtn.addEventListener('click', spinWheel);
-      resetBtn.addEventListener('click', resetWheel);
       closeResultBtn.addEventListener('click', () => resultPopup.classList.add('hidden'));
       addPrizeBtn.addEventListener('click', addNewPrize);
       
@@ -414,15 +390,6 @@
       
       // 中奖扇区的中心角度
       return prizeIndex * sliceAngle + sliceAngle / 2;
-    }
-    
-    // 重置转盘
-    function resetWheel() {
-      if (isSpinning) return;
-      
-      wheelEl.style.transform = 'rotate(0deg)';
-      currentRotation = 0;
-      resultPopup.classList.add('hidden');
     }
     
     // 创建彩带动画
