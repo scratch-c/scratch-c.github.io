@@ -1,430 +1,174 @@
-/* 
- * styles.css - 现代化动画与卡片样式库
- * 包含多种卡片设计、悬停动画和过渡效果
- * 响应式设计，适用于各种设备
- */
-
-/* ====== 基础重置与变量 ====== */
-:root {
-    /* 主色调 */
-    --primary-color: #4f46e5;
-    --secondary-color: #10b981;
-    --accent-color: #f59e0b;
-    --danger-color: #ef4444;
-    
-    /* 背景色 */
-    --light-bg: #f8fafc;
-    --card-bg: #ffffff;
-    --dark-bg: #1e293b;
-    
-    /* 文本色 */
-    --text-light: #64748b;
-    --text-dark: #1e293b;
-    --text-white: #ffffff;
-    
-    /* 阴影 */
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    
-    /* 圆角 */
-    --radius-sm: 0.375rem;
-    --radius-md: 0.5rem;
-    --radius-lg: 0.75rem;
-    --radius-xl: 1rem;
-    
-    /* 过渡 */
-    --transition-fast: 0.2s ease;
-    --transition-normal: 0.3s ease;
-    --transition-slow: 0.5s ease;
-}
-
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-body {
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    line-height: 1.6;
-    color: var(--text-dark);
-    background-color: var(--light-bg);
-    padding: 20px;
-    min-height: 100vh;
-}
-
-/* ====== 容器与布局 ====== */
-.container {
+/* ====== Markdown转HTML页面特殊样式 ====== */
+.markdown-container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 20px;
-}
-
-.section-title {
-    text-align: center;
-    margin-bottom: 3rem;
-    font-size: 2.5rem;
-    color: var(--primary-color);
-    position: relative;
-}
-
-.section-title:after {
-    content: '';
-    display: block;
-    width: 80px;
-    height: 4px;
-    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
-    margin: 10px auto;
-    border-radius: 2px;
-}
-
-.cards-container {
+    padding: 2rem;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-columns: 1fr 1fr;
     gap: 2rem;
-    margin-bottom: 4rem;
 }
 
-/* ====== 基础卡片样式 ====== */
-.card {
-    background-color: var(--card-bg);
+@media (max-width: 900px) {
+    .markdown-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+.markdown-editor, .html-preview {
+    background: var(--bg-card);
     border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--shadow-lg);
     overflow: hidden;
-    transition: var(--transition-normal);
-    position: relative;
 }
 
-.card:hover {
-    transform: translateY(-8px);
-    box-shadow: var(--shadow-xl);
-}
-
-.card-image {
-    width: 100%;
-    height: 200px;
-    object-fit: cover;
-    display: block;
-}
-
-.card-content {
-    padding: 1.5rem;
-}
-
-.card-title {
-    font-size: 1.5rem;
-    margin-bottom: 0.75rem;
-    color: var(--text-dark);
-}
-
-.card-description {
-    color: var(--text-light);
-    margin-bottom: 1.5rem;
-}
-
-.card-footer {
+.editor-header, .preview-header {
+    padding: 1rem 1.5rem;
+    background: var(--primary-color);
+    color: white;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-top: 1rem;
-    border-top: 1px solid rgba(0, 0, 0, 0.05);
 }
 
-/* ====== 卡片变体 ====== */
-/* 1. 带图标的卡片 */
-.card-icon {
-    position: absolute;
-    top: -25px;
-    left: 1.5rem;
-    width: 50px;
-    height: 50px;
-    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-    border-radius: 50%;
+.editor-title, .preview-title {
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.editor-actions, .preview-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-icon {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-md);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
-    font-size: 1.5rem;
-    box-shadow: var(--shadow-lg);
-}
-
-.card-icon-wrapper {
-    padding-top: 2rem;
-}
-
-/* 2. 渐变背景卡片 */
-.card-gradient {
-    background: linear-gradient(135deg, var(--primary-color), #8b5cf6);
-    color: var(--text-white);
-}
-
-.card-gradient .card-title,
-.card-gradient .card-description {
-    color: var(--text-white);
-}
-
-.card-gradient .card-footer {
-    border-top-color: rgba(255, 255, 255, 0.2);
-}
-
-/* 3. 边框高亮卡片 */
-.card-border-highlight {
-    border: 2px solid transparent;
-    background-clip: padding-box;
-    position: relative;
-}
-
-.card-border-highlight:before {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    z-index: -1;
-    margin: -2px;
-    border-radius: inherit;
-    background: linear-gradient(135deg, var(--primary-color), var(--accent-color), var(--secondary-color));
-}
-
-/* 4. 悬浮效果卡片 */
-.card-float {
-    animation: float 6s ease-in-out infinite;
-}
-
-@keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-20px); }
-}
-
-/* ====== 动画类 ====== */
-/* 淡入动画 */
-.fade-in {
-    opacity: 0;
-    animation: fadeIn 0.8s ease forwards;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-/* 滑入动画 */
-.slide-in-left {
-    opacity: 0;
-    transform: translateX(-50px);
-    animation: slideInLeft 0.6s ease forwards;
-}
-
-@keyframes slideInLeft {
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-.slide-in-right {
-    opacity: 0;
-    transform: translateX(50px);
-    animation: slideInRight 0.6s ease forwards;
-}
-
-@keyframes slideInRight {
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-/* 缩放动画 */
-.scale-in {
-    opacity: 0;
-    transform: scale(0.8);
-    animation: scaleIn 0.5s ease forwards;
-}
-
-@keyframes scaleIn {
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
-}
-
-/* 脉冲动画 */
-.pulse {
-    animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
-}
-
-/* 旋转动画 */
-.rotate {
-    animation: rotate 10s linear infinite;
-}
-
-@keyframes rotate {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-
-/* 打字机效果 */
-.typewriter {
-    overflow: hidden;
-    border-right: 3px solid var(--primary-color);
-    white-space: nowrap;
-    animation: typing 3.5s steps(40, end), blink-caret 0.75s step-end infinite;
-}
-
-@keyframes typing {
-    from { width: 0 }
-    to { width: 100% }
-}
-
-@keyframes blink-caret {
-    from, to { border-color: transparent }
-    50% { border-color: var(--primary-color); }
-}
-
-/* ====== 按钮样式 ====== */
-.btn {
-    display: inline-block;
-    padding: 0.75rem 1.5rem;
-    border-radius: var(--radius-md);
-    font-weight: 600;
-    text-decoration: none;
-    transition: var(--transition-fast);
     cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.btn-icon:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.markdown-textarea {
+    width: 100%;
+    min-height: 500px;
+    padding: 1.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.95rem;
+    line-height: 1.6;
     border: none;
-    font-size: 1rem;
+    resize: vertical;
+    background: var(--bg-card);
+    color: var(--text-primary);
 }
 
-.btn-primary {
-    background-color: var(--primary-color);
-    color: white;
+.html-output {
+    padding: 1.5rem;
+    min-height: 500px;
+    overflow: auto;
+    background: var(--bg-card);
+    color: var(--text-primary);
 }
 
-.btn-primary:hover {
-    background-color: #4338ca;
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
+/* Markdown预览样式 */
+.markdown-preview {
+    padding: 1.5rem;
+    min-height: 500px;
+    overflow: auto;
 }
 
-.btn-secondary {
-    background-color: var(--secondary-color);
-    color: white;
-}
-
-.btn-secondary:hover {
-    background-color: #0da271;
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-}
-
-.btn-outline {
-    background-color: transparent;
+.markdown-preview h1,
+.markdown-preview h2,
+.markdown-preview h3 {
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
     color: var(--primary-color);
-    border: 2px solid var(--primary-color);
 }
 
-.btn-outline:hover {
-    background-color: var(--primary-color);
-    color: white;
+.markdown-preview h1 {
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 0.3em;
 }
 
-/* ====== 徽章 ====== */
-.badge {
-    display: inline-block;
-    padding: 0.25rem 0.75rem;
-    border-radius: 20px;
-    font-size: 0.875rem;
+.markdown-preview p {
+    margin-bottom: 1em;
+    line-height: 1.7;
+}
+
+.markdown-preview code {
+    background: rgba(79, 70, 229, 0.1);
+    padding: 0.2em 0.4em;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+    color: var(--primary-dark);
+}
+
+.markdown-preview pre {
+    background: var(--bg-primary);
+    border-radius: var(--radius-md);
+    padding: 1em;
+    overflow: auto;
+    margin: 1em 0;
+}
+
+.markdown-preview pre code {
+    background: transparent;
+    padding: 0;
+    color: inherit;
+}
+
+.markdown-preview blockquote {
+    border-left: 4px solid var(--primary-color);
+    padding-left: 1em;
+    margin-left: 0;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+.markdown-preview table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1em 0;
+}
+
+.markdown-preview th,
+.markdown-preview td {
+    border: 1px solid var(--border-color);
+    padding: 0.5em 1em;
+    text-align: left;
+}
+
+.markdown-preview th {
+    background: var(--bg-primary);
     font-weight: 600;
 }
 
-.badge-primary {
-    background-color: rgba(79, 70, 229, 0.1);
+.markdown-preview ul,
+.markdown-preview ol {
+    padding-left: 2em;
+    margin: 1em 0;
+}
+
+.markdown-preview li {
+    margin-bottom: 0.5em;
+}
+
+.markdown-preview a {
     color: var(--primary-color);
+    text-decoration: none;
+    border-bottom: 1px dashed var(--primary-light);
 }
 
-.badge-secondary {
-    background-color: rgba(16, 185, 129, 0.1);
-    color: var(--secondary-color);
-}
-
-.badge-accent {
-    background-color: rgba(245, 158, 11, 0.1);
-    color: var(--accent-color);
-}
-
-/* ====== 加载动画 ====== */
-.loader {
-    width: 48px;
-    height: 48px;
-    border: 5px solid rgba(0, 0, 0, 0.1);
-    border-radius: 50%;
-    border-top-color: var(--primary-color);
-    animation: spin 1s linear infinite;
-    margin: 2rem auto;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-/* ====== 工具类 ====== */
-.text-center { text-align: center; }
-.mb-1 { margin-bottom: 0.5rem; }
-.mb-2 { margin-bottom: 1rem; }
-.mb-3 { margin-bottom: 1.5rem; }
-.mb-4 { margin-bottom: 2rem; }
-.mt-1 { margin-top: 0.5rem; }
-.mt-2 { margin-top: 1rem; }
-.mt-3 { margin-top: 1.5rem; }
-.mt-4 { margin-top: 2rem; }
-.d-flex { display: flex; }
-.align-center { align-items: center; }
-.justify-between { justify-content: space-between; }
-
-/* ====== 响应式调整 ====== */
-@media (max-width: 768px) {
-    .cards-container {
-        grid-template-columns: 1fr;
-    }
-    
-    .section-title {
-        font-size: 2rem;
-    }
-}
-
-/* ====== 页脚 ====== */
-.footer {
-    text-align: center;
-    padding: 2rem 0;
-    color: var(--text-light);
-    font-size: 0.9rem;
-    border-top: 1px solid rgba(0, 0, 0, 0.05);
-    margin-top: 4rem;
-}
-
-/* ====== 暗色模式支持 ====== */
-@media (prefers-color-scheme: dark) {
-    :root {
-        --light-bg: #0f172a;
-        --card-bg: #1e293b;
-        --text-dark: #f1f5f9;
-        --text-light: #94a3b8;
-    }
-    
-    .card {
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
-    }
-    
-    .card:hover {
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
-    }
+.markdown-preview a:hover {
+    border-bottom-style: solid;
 }
