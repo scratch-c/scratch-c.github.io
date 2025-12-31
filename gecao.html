@@ -127,28 +127,7 @@
             height: 100%;
         }
         
-        .player {
-            position: absolute;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: linear-gradient(45deg, #00d4ff, #0088ff);
-            box-shadow: 0 0 15px #00d4ff;
-            z-index: 5;
-            transition: transform 0.1s;
-        }
-        
-        .player::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 70%;
-            height: 70%;
-            transform: translate(-50%, -50%);
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.3);
-        }
+        /* 删除原来的 .player 样式，改为在 Canvas 中绘制 */
         
         .enemy {
             position: absolute;
@@ -489,7 +468,7 @@
         <div class="game-content">
             <div class="game-area">
                 <canvas id="game-canvas"></canvas>
-                <div id="player" class="player"></div>
+                <!-- 删除原来的 player div -->
                 <div class="enemy-count">敌人: <span id="enemy-count">0</span></div>
                 <div class="instructions">
                     <h3>游戏说明</h3>
@@ -598,7 +577,6 @@
             // 初始化玩家位置
             player.x = canvas.width / 2;
             player.y = canvas.height / 2;
-            updatePlayerPosition();
             
             // 初始化升级项
             initUpgrades();
@@ -629,6 +607,28 @@
             const gameArea = document.querySelector('.game-area');
             canvas.width = gameArea.clientWidth;
             canvas.height = gameArea.clientHeight;
+        }
+        
+        // 绘制玩家
+        function drawPlayer() {
+            // 绘制玩家
+            ctx.fillStyle = '#00d4ff';
+            ctx.beginPath();
+            ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 绘制玩家内部光晕
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.beginPath();
+            ctx.arc(player.x, player.y, player.radius * 0.7, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 绘制玩家外发光
+            ctx.strokeStyle = 'rgba(0, 212, 255, 0.7)';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
+            ctx.stroke();
         }
         
         // 初始化升级项
@@ -776,15 +776,6 @@
             // 限制玩家在Canvas范围内
             player.x = Math.max(player.radius, Math.min(canvas.width - player.radius, player.x));
             player.y = Math.max(player.radius, Math.min(canvas.height - player.radius, player.y));
-            
-            updatePlayerPosition();
-        }
-        
-        // 更新玩家显示位置
-        function updatePlayerPosition() {
-            const playerElement = document.getElementById('player');
-            playerElement.style.left = `${player.x - player.radius}px`;
-            playerElement.style.top = `${player.y - player.radius}px`;
         }
         
         // 生成敌人
@@ -870,6 +861,9 @@
             
             // 绘制背景网格
             drawBackground();
+            
+            // 绘制玩家
+            drawPlayer();
             
             // 更新和绘制敌人
             updateEnemies();
@@ -1238,7 +1232,6 @@
             // 更新玩家位置
             player.x = canvas.width / 2;
             player.y = canvas.height / 2;
-            updatePlayerPosition();
             
             // 生成初始敌人
             spawnEnemies(10);
