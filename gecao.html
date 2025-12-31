@@ -1,0 +1,1257 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>暴爽割草打怪升级</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 1200px;
+            height: 90vh;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            overflow: hidden;
+            background-color: rgba(0, 0, 20, 0.7);
+        }
+        
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 25px;
+            background: rgba(0, 20, 40, 0.8);
+            border-bottom: 3px solid #00d4ff;
+            z-index: 10;
+        }
+        
+        .game-title {
+            font-size: 28px;
+            font-weight: 800;
+            color: #00d4ff;
+            text-shadow: 0 0 10px rgba(0, 212, 255, 0.7);
+            letter-spacing: 1px;
+        }
+        
+        .stats-container {
+            display: flex;
+            gap: 25px;
+        }
+        
+        .stat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: rgba(0, 30, 60, 0.8);
+            padding: 8px 15px;
+            border-radius: 8px;
+            min-width: 120px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #a0d2ff;
+            margin-bottom: 5px;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #fff;
+        }
+        
+        .hp-bar-container, .xp-bar-container {
+            width: 100%;
+            height: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+        
+        .hp-bar, .xp-bar {
+            height: 100%;
+            transition: width 0.3s;
+        }
+        
+        .hp-bar {
+            background: linear-gradient(90deg, #ff0000, #ff6b6b);
+        }
+        
+        .xp-bar {
+            background: linear-gradient(90deg, #00ff88, #00d4ff);
+        }
+        
+        .game-content {
+            display: flex;
+            flex: 1;
+            position: relative;
+        }
+        
+        .game-area {
+            flex: 3;
+            position: relative;
+            overflow: hidden;
+            background: radial-gradient(circle at center, #0f1a30 0%, #050a15 100%);
+        }
+        
+        #game-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .player {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #00d4ff, #0088ff);
+            box-shadow: 0 0 15px #00d4ff;
+            z-index: 5;
+            transition: transform 0.1s;
+        }
+        
+        .player::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 70%;
+            height: 70%;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .enemy {
+            position: absolute;
+            border-radius: 50%;
+            box-shadow: 0 0 8px rgba(255, 0, 0, 0.7);
+            transition: transform 0.2s;
+        }
+        
+        .xp-orb {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #00ff88, #008855);
+            box-shadow: 0 0 10px #00ff88;
+            animation: pulse 1.5s infinite alternate;
+        }
+        
+        @keyframes pulse {
+            from { transform: scale(1); opacity: 0.9; }
+            to { transform: scale(1.1); opacity: 1; }
+        }
+        
+        .sidebar {
+            flex: 1;
+            background: rgba(0, 15, 30, 0.9);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            border-left: 2px solid #00aaff;
+            max-width: 300px;
+        }
+        
+        .upgrade-section {
+            margin-bottom: 25px;
+        }
+        
+        .section-title {
+            font-size: 20px;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid rgba(0, 212, 255, 0.3);
+        }
+        
+        .upgrade-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .upgrade-item {
+            background: rgba(0, 40, 80, 0.6);
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid rgba(0, 150, 255, 0.3);
+        }
+        
+        .upgrade-item:hover {
+            background: rgba(0, 60, 120, 0.8);
+            border-color: #00aaff;
+            transform: translateY(-2px);
+        }
+        
+        .upgrade-item.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .upgrade-info {
+            flex: 1;
+        }
+        
+        .upgrade-name {
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+        
+        .upgrade-desc {
+            font-size: 12px;
+            color: #a0d2ff;
+        }
+        
+        .upgrade-cost {
+            color: #ffcc00;
+            font-weight: 700;
+            font-size: 18px;
+            margin-left: 10px;
+        }
+        
+        .skills-section {
+            flex: 1;
+            overflow-y: auto;
+        }
+        
+        .skills-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .skill-item {
+            background: rgba(30, 0, 60, 0.6);
+            border-radius: 8px;
+            padding: 12px;
+            border: 1px solid rgba(150, 0, 255, 0.3);
+        }
+        
+        .skill-name {
+            color: #bb80ff;
+            font-weight: 600;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .skill-level {
+            color: #ffcc00;
+            margin-left: auto;
+        }
+        
+        .skill-progress {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+        
+        .skill-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #bb80ff, #6600cc);
+            border-radius: 3px;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 16px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(to bottom, #00aaff, #0066cc);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(to bottom, #00bbff, #0077dd);
+            box-shadow: 0 0 15px rgba(0, 170, 255, 0.7);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(to bottom, #ff3366, #cc0033);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: linear-gradient(to bottom, #ff4477, #dd0044);
+            box-shadow: 0 0 15px rgba(255, 51, 102, 0.7);
+        }
+        
+        .game-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.85);
+            padding: 30px 50px;
+            border-radius: 15px;
+            text-align: center;
+            z-index: 100;
+            border: 3px solid #00d4ff;
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.5);
+            max-width: 500px;
+            display: none;
+        }
+        
+        .message-title {
+            font-size: 36px;
+            color: #00d4ff;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px rgba(0, 212, 255, 0.7);
+        }
+        
+        .message-text {
+            font-size: 18px;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            color: #e0f7ff;
+        }
+        
+        .damage-text {
+            position: absolute;
+            color: #ff4444;
+            font-weight: 800;
+            font-size: 18px;
+            pointer-events: none;
+            z-index: 10;
+            animation: floatUp 1s forwards;
+            text-shadow: 0 0 5px rgba(255, 0, 0, 0.7);
+        }
+        
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-50px); }
+        }
+        
+        .instructions {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 14px;
+            max-width: 300px;
+            border: 1px solid rgba(0, 212, 255, 0.3);
+        }
+        
+        .instructions h3 {
+            color: #00d4ff;
+            margin-bottom: 10px;
+        }
+        
+        .instructions p {
+            margin-bottom: 5px;
+            color: #a0d2ff;
+        }
+        
+        .level-up-effect {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, rgba(0, 212, 255, 0.3) 0%, transparent 70%);
+            pointer-events: none;
+            opacity: 0;
+            z-index: 20;
+        }
+        
+        .enemy-count {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 0, 0, 0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: 700;
+            border: 1px solid rgba(255, 0, 0, 0.5);
+        }
+        
+        @media (max-width: 1024px) {
+            .game-container {
+                height: 95vh;
+                max-width: 95%;
+            }
+            
+            .sidebar {
+                max-width: 250px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .game-content {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                max-width: 100%;
+                max-height: 40vh;
+            }
+            
+            .game-area {
+                min-height: 60vh;
+            }
+            
+            .stats-container {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            
+            .stat {
+                min-width: 100px;
+                padding: 5px 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <div class="game-title">
+                <i class="fas fa-fire"></i> 暴爽割草打怪升级
+            </div>
+            <div class="stats-container">
+                <div class="stat">
+                    <div class="stat-label">等级</div>
+                    <div id="level" class="stat-value">1</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">生命值</div>
+                    <div id="hp" class="stat-value">100</div>
+                    <div class="hp-bar-container">
+                        <div id="hp-bar" class="hp-bar" style="width: 100%"></div>
+                    </div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">经验值</div>
+                    <div id="xp" class="stat-value">0/100</div>
+                    <div class="xp-bar-container">
+                        <div id="xp-bar" class="xp-bar" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">金币</div>
+                    <div id="gold" class="stat-value">50</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="game-content">
+            <div class="game-area">
+                <canvas id="game-canvas"></canvas>
+                <div id="player" class="player"></div>
+                <div class="enemy-count">敌人: <span id="enemy-count">0</span></div>
+                <div class="instructions">
+                    <h3>游戏说明</h3>
+                    <p>移动鼠标控制角色</p>
+                    <p>自动攻击周围敌人</p>
+                    <p>收集经验球升级</p>
+                    <p>升级后购买能力提升</p>
+                </div>
+                <div class="level-up-effect" id="level-up-effect"></div>
+            </div>
+            
+            <div class="sidebar">
+                <div class="upgrade-section">
+                    <h3 class="section-title">能力升级</h3>
+                    <div class="upgrade-list" id="upgrade-list">
+                        <!-- 升级项将通过JS动态生成 -->
+                    </div>
+                </div>
+                
+                <div class="skills-section">
+                    <h3 class="section-title">技能等级</h3>
+                    <div class="skills-list" id="skills-list">
+                        <!-- 技能项将通过JS动态生成 -->
+                    </div>
+                </div>
+                
+                <div class="controls">
+                    <button id="pause-btn" class="btn btn-primary">
+                        <i class="fas fa-pause"></i> 暂停
+                    </button>
+                    <button id="restart-btn" class="btn btn-danger">
+                        <i class="fas fa-redo"></i> 重新开始
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="game-over-message" class="game-message">
+        <h2 class="message-title">游戏结束!</h2>
+        <p class="message-text" id="final-stats">你达到了 <span id="final-level">1</span> 级，击败了 <span id="final-enemies">0</span> 个敌人</p>
+        <button id="restart-game-btn" class="btn btn-primary">
+            <i class="fas fa-play"></i> 重新开始
+        </button>
+    </div>
+
+    <script>
+        // 游戏主要变量
+        let canvas, ctx;
+        let player = {
+            x: 400,
+            y: 300,
+            radius: 20,
+            speed: 5,
+            maxHp: 100,
+            hp: 100,
+            damage: 10,
+            attackSpeed: 10, // 每秒攻击次数
+            attackRange: 100,
+            lastAttackTime: 0,
+            level: 1,
+            xp: 0,
+            xpToNextLevel: 100,
+            gold: 50
+        };
+        
+        let enemies = [];
+        let xpOrbs = [];
+        let damageTexts = [];
+        let upgrades = [];
+        let skills = [];
+        let gameRunning = true;
+        let gameTime = 0;
+        let enemyCount = 0;
+        let totalEnemiesKilled = 0;
+        let animationId;
+        
+        // 升级项数据
+        const upgradeData = [
+            { id: 1, name: "攻击力+", description: "增加10%攻击力", cost: 30, effect: "damage", value: 1.1 },
+            { id: 2, name: "攻击速度+", description: "增加15%攻击速度", cost: 40, effect: "attackSpeed", value: 1.15 },
+            { id: 3, name: "攻击范围+", description: "增加20%攻击范围", cost: 35, effect: "attackRange", value: 1.2 },
+            { id: 4, name: "最大生命值+", description: "增加20%最大生命值", cost: 50, effect: "maxHp", value: 1.2 },
+            { id: 5, name: "移动速度+", description: "增加15%移动速度", cost: 30, effect: "speed", value: 1.15 },
+            { id: 6, name: "生命恢复", description: "每秒恢复2%生命值", cost: 60, effect: "hpRegen", value: 0.02 }
+        ];
+        
+        // 技能数据
+        const skillData = [
+            { id: 1, name: "旋转攻击", icon: "fas fa-sync-alt", maxLevel: 5, level: 0 },
+            { id: 2, name: "闪电链", icon: "fas fa-bolt", maxLevel: 5, level: 0 },
+            { id: 3, name: "冰冻新星", icon: "fas fa-snowflake", maxLevel: 3, level: 0 },
+            { id: 4, name: "召唤帮手", icon: "fas fa-robot", maxLevel: 3, level: 0 },
+            { id: 5, name: "狂暴模式", icon: "fas fa-fire", maxLevel: 3, level: 0 }
+        ];
+        
+        // 初始化游戏
+        function initGame() {
+            canvas = document.getElementById('game-canvas');
+            ctx = canvas.getContext('2d');
+            
+            // 设置Canvas尺寸
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+            
+            // 初始化玩家位置
+            player.x = canvas.width / 2;
+            player.y = canvas.height / 2;
+            updatePlayerPosition();
+            
+            // 初始化升级项
+            initUpgrades();
+            
+            // 初始化技能
+            initSkills();
+            
+            // 添加敌人
+            spawnEnemies(10);
+            
+            // 设置游戏循环
+            gameLoop();
+            
+            // 添加鼠标移动事件
+            canvas.addEventListener('mousemove', movePlayer);
+            
+            // 按钮事件
+            document.getElementById('pause-btn').addEventListener('click', togglePause);
+            document.getElementById('restart-btn').addEventListener('click', restartGame);
+            document.getElementById('restart-game-btn').addEventListener('click', restartGame);
+            
+            // 初始更新UI
+            updateUI();
+        }
+        
+        // 调整Canvas尺寸
+        function resizeCanvas() {
+            const gameArea = document.querySelector('.game-area');
+            canvas.width = gameArea.clientWidth;
+            canvas.height = gameArea.clientHeight;
+        }
+        
+        // 初始化升级项
+        function initUpgrades() {
+            const upgradeList = document.getElementById('upgrade-list');
+            upgradeList.innerHTML = '';
+            
+            upgradeData.forEach(upgrade => {
+                const upgradeItem = document.createElement('div');
+                upgradeItem.className = 'upgrade-item';
+                upgradeItem.id = `upgrade-${upgrade.id}`;
+                upgradeItem.innerHTML = `
+                    <div class="upgrade-info">
+                        <div class="upgrade-name">${upgrade.name}</div>
+                        <div class="upgrade-desc">${upgrade.description}</div>
+                    </div>
+                    <div class="upgrade-cost">${upgrade.cost}</div>
+                `;
+                
+                upgradeItem.addEventListener('click', () => purchaseUpgrade(upgrade.id));
+                upgradeList.appendChild(upgradeItem);
+                
+                upgrades.push({
+                    ...upgrade,
+                    element: upgradeItem
+                });
+            });
+        }
+        
+        // 初始化技能
+        function initSkills() {
+            const skillsList = document.getElementById('skills-list');
+            skillsList.innerHTML = '';
+            
+            skillData.forEach(skill => {
+                const skillItem = document.createElement('div');
+                skillItem.className = 'skill-item';
+                skillItem.id = `skill-${skill.id}`;
+                skillItem.innerHTML = `
+                    <div class="skill-name">
+                        <i class="${skill.icon}"></i> ${skill.name}
+                        <span class="skill-level">${skill.level}/${skill.maxLevel}</span>
+                    </div>
+                    <div class="skill-progress">
+                        <div class="skill-progress-bar" style="width: ${(skill.level / skill.maxLevel) * 100}%"></div>
+                    </div>
+                `;
+                
+                skillsList.appendChild(skillItem);
+                
+                skills.push({
+                    ...skill,
+                    element: skillItem,
+                    progressBar: skillItem.querySelector('.skill-progress-bar')
+                });
+            });
+        }
+        
+        // 购买升级
+        function purchaseUpgrade(upgradeId) {
+            const upgrade = upgrades.find(u => u.id === upgradeId);
+            
+            if (!upgrade || player.gold < upgrade.cost) return;
+            
+            // 扣除金币
+            player.gold -= upgrade.cost;
+            
+            // 应用升级效果
+            switch(upgrade.effect) {
+                case 'damage':
+                    player.damage = Math.round(player.damage * upgrade.value);
+                    break;
+                case 'attackSpeed':
+                    player.attackSpeed *= upgrade.value;
+                    break;
+                case 'attackRange':
+                    player.attackRange *= upgrade.value;
+                    break;
+                case 'maxHp':
+                    const hpPercent = player.hp / player.maxHp;
+                    player.maxHp = Math.round(player.maxHp * upgrade.value);
+                    player.hp = Math.round(player.maxHp * hpPercent);
+                    break;
+                case 'speed':
+                    player.speed *= upgrade.value;
+                    break;
+                case 'hpRegen':
+                    // 生命恢复在游戏循环中处理
+                    break;
+            }
+            
+            // 增加升级成本
+            upgrade.cost = Math.round(upgrade.cost * 1.5);
+            upgrade.element.querySelector('.upgrade-cost').textContent = upgrade.cost;
+            
+            // 更新UI
+            updateUI();
+            
+            // 显示升级效果
+            showLevelUpEffect();
+        }
+        
+        // 升级技能
+        function upgradeSkill(skillId) {
+            const skill = skills.find(s => s.id === skillId);
+            if (!skill || skill.level >= skill.maxLevel) return;
+            
+            skill.level++;
+            skill.element.querySelector('.skill-level').textContent = `${skill.level}/${skill.maxLevel}`;
+            skill.progressBar.style.width = `${(skill.level / skill.maxLevel) * 100}%`;
+            
+            // 根据技能类型应用效果
+            switch(skillId) {
+                case 1: // 旋转攻击
+                    player.attackRange *= 1.1;
+                    break;
+                case 2: // 闪电链
+                    player.damage = Math.round(player.damage * 1.15);
+                    break;
+                case 3: // 冰冻新星
+                    player.attackSpeed *= 1.1;
+                    break;
+                case 4: // 召唤帮手
+                    player.maxHp = Math.round(player.maxHp * 1.2);
+                    player.hp = Math.min(player.hp + 20, player.maxHp);
+                    break;
+                case 5: // 狂暴模式
+                    player.damage = Math.round(player.damage * 1.25);
+                    player.attackSpeed *= 1.2;
+                    break;
+            }
+            
+            updateUI();
+            showLevelUpEffect();
+        }
+        
+        // 移动玩家
+        function movePlayer(e) {
+            if (!gameRunning) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            player.x = e.clientX - rect.left;
+            player.y = e.clientY - rect.top;
+            
+            // 限制玩家在Canvas范围内
+            player.x = Math.max(player.radius, Math.min(canvas.width - player.radius, player.x));
+            player.y = Math.max(player.radius, Math.min(canvas.height - player.radius, player.y));
+            
+            updatePlayerPosition();
+        }
+        
+        // 更新玩家显示位置
+        function updatePlayerPosition() {
+            const playerElement = document.getElementById('player');
+            playerElement.style.left = `${player.x - player.radius}px`;
+            playerElement.style.top = `${player.y - player.radius}px`;
+        }
+        
+        // 生成敌人
+        function spawnEnemies(count) {
+            for (let i = 0; i < count; i++) {
+                // 随机生成在屏幕边缘
+                let x, y;
+                if (Math.random() < 0.5) {
+                    x = Math.random() < 0.5 ? -20 : canvas.width + 20;
+                    y = Math.random() * canvas.height;
+                } else {
+                    x = Math.random() * canvas.width;
+                    y = Math.random() < 0.5 ? -20 : canvas.height + 20;
+                }
+                
+                // 根据游戏时间增加敌人难度
+                const enemyLevel = Math.floor(gameTime / 30) + 1;
+                const enemyHp = 20 + enemyLevel * 10;
+                const enemyDamage = 5 + enemyLevel * 2;
+                const enemySpeed = 1 + enemyLevel * 0.1;
+                const enemyRadius = 12 + enemyLevel * 1.5;
+                
+                enemies.push({
+                    x,
+                    y,
+                    radius: enemyRadius,
+                    speed: enemySpeed,
+                    hp: enemyHp,
+                    maxHp: enemyHp,
+                    damage: enemyDamage,
+                    color: `hsl(${Math.min(enemyLevel * 10, 360)}, 80%, 50%)`
+                });
+                
+                enemyCount++;
+            }
+            
+            document.getElementById('enemy-count').textContent = enemyCount;
+        }
+        
+        // 生成经验球
+        function spawnXpOrb(x, y, amount) {
+            const radius = 8 + amount / 5;
+            xpOrbs.push({
+                x,
+                y,
+                radius,
+                amount,
+                color: `hsl(${120 + amount * 5}, 100%, 50%)`
+            });
+        }
+        
+        // 显示伤害数字
+        function showDamageText(x, y, damage) {
+            damageTexts.push({
+                x,
+                y,
+                text: `-${damage}`,
+                life: 60, // 帧数
+                opacity: 1
+            });
+        }
+        
+        // 显示升级特效
+        function showLevelUpEffect() {
+            const effect = document.getElementById('level-up-effect');
+            effect.style.opacity = 1;
+            effect.style.animation = 'none';
+            
+            setTimeout(() => {
+                effect.style.animation = 'fadeOut 1s forwards';
+            }, 10);
+        }
+        
+        // 游戏循环
+        function gameLoop() {
+            if (!gameRunning) return;
+            
+            // 更新时间
+            gameTime += 1/60;
+            
+            // 清除Canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 绘制背景网格
+            drawBackground();
+            
+            // 更新和绘制敌人
+            updateEnemies();
+            
+            // 更新和绘制经验球
+            updateXpOrbs();
+            
+            // 更新和绘制伤害数字
+            updateDamageTexts();
+            
+            // 玩家攻击
+            playerAttack();
+            
+            // 敌人攻击玩家
+            enemyAttack();
+            
+            // 生成新敌人
+            if (enemies.length < 5 + Math.floor(gameTime / 10)) {
+                spawnEnemies(1);
+            }
+            
+            // 生命恢复
+            if (upgrades.find(u => u.effect === 'hpRegen')) {
+                player.hp = Math.min(player.hp + player.maxHp * 0.02 / 60, player.maxHp);
+                updateUI();
+            }
+            
+            // 随机升级技能
+            if (Math.random() < 0.001) {
+                const availableSkills = skills.filter(s => s.level < s.maxLevel);
+                if (availableSkills.length > 0) {
+                    const randomSkill = availableSkills[Math.floor(Math.random() * availableSkills.length)];
+                    upgradeSkill(randomSkill.id);
+                }
+            }
+            
+            // 继续游戏循环
+            animationId = requestAnimationFrame(gameLoop);
+        }
+        
+        // 绘制背景网格
+        function drawBackground() {
+            ctx.strokeStyle = 'rgba(0, 100, 200, 0.05)';
+            ctx.lineWidth = 1;
+            
+            // 垂直线
+            for (let x = 0; x < canvas.width; x += 50) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            
+            // 水平线
+            for (let y = 0; y < canvas.height; y += 50) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+        }
+        
+        // 更新敌人
+        function updateEnemies() {
+            for (let i = enemies.length - 1; i >= 0; i--) {
+                const enemy = enemies[i];
+                
+                // 计算朝向玩家的方向
+                const dx = player.x - enemy.x;
+                const dy = player.y - enemy.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                // 移动敌人
+                if (distance > 0) {
+                    enemy.x += (dx / distance) * enemy.speed;
+                    enemy.y += (dy / distance) * enemy.speed;
+                }
+                
+                // 绘制敌人
+                ctx.fillStyle = enemy.color;
+                ctx.beginPath();
+                ctx.arc(enemy.x, enemy.y, enemy.radius, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // 绘制敌人生命条
+                if (enemy.hp < enemy.maxHp) {
+                    const hpPercent = enemy.hp / enemy.maxHp;
+                    const barWidth = enemy.radius * 2;
+                    const barHeight = 4;
+                    
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+                    ctx.fillRect(enemy.x - enemy.radius, enemy.y - enemy.radius - 10, barWidth, barHeight);
+                    
+                    ctx.fillStyle = hpPercent > 0.5 ? '#00ff00' : hpPercent > 0.25 ? '#ffff00' : '#ff0000';
+                    ctx.fillRect(enemy.x - enemy.radius, enemy.y - enemy.radius - 10, barWidth * hpPercent, barHeight);
+                }
+                
+                // 检查敌人是否死亡
+                if (enemy.hp <= 0) {
+                    // 生成经验球
+                    const xpAmount = Math.floor(enemy.maxHp / 10);
+                    spawnXpOrb(enemy.x, enemy.y, xpAmount);
+                    
+                    // 增加金币
+                    player.gold += Math.floor(enemy.maxHp / 20);
+                    
+                    // 移除敌人
+                    enemies.splice(i, 1);
+                    enemyCount--;
+                    totalEnemiesKilled++;
+                    
+                    document.getElementById('enemy-count').textContent = enemyCount;
+                }
+            }
+        }
+        
+        // 更新经验球
+        function updateXpOrbs() {
+            for (let i = xpOrbs.length - 1; i >= 0; i--) {
+                const orb = xpOrbs[i];
+                
+                // 计算朝向玩家的方向
+                const dx = player.x - orb.x;
+                const dy = player.y - orb.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                // 如果经验球靠近玩家，则飞向玩家
+                if (distance < player.radius + orb.radius + 100) {
+                    const speed = 3 + (100 / distance);
+                    orb.x += (dx / distance) * speed;
+                    orb.y += (dy / distance) * speed;
+                }
+                
+                // 绘制经验球
+                ctx.fillStyle = orb.color;
+                ctx.beginPath();
+                ctx.arc(orb.x, orb.y, orb.radius, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // 绘制经验球光晕
+                ctx.strokeStyle = orb.color;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(orb.x, orb.y, orb.radius + 3, 0, Math.PI * 2);
+                ctx.stroke();
+                
+                // 检查是否被玩家收集
+                if (distance < player.radius + orb.radius) {
+                    // 增加经验值
+                    player.xp += orb.amount;
+                    
+                    // 检查是否升级
+                    while (player.xp >= player.xpToNextLevel) {
+                        player.xp -= player.xpToNextLevel;
+                        player.level++;
+                        player.xpToNextLevel = Math.round(player.xpToNextLevel * 1.5);
+                        
+                        // 升级时恢复部分生命值
+                        player.hp = Math.min(player.hp + player.maxHp * 0.3, player.maxHp);
+                        
+                        // 显示升级特效
+                        showLevelUpEffect();
+                        
+                        // 随机获得一个技能升级
+                        const availableSkills = skills.filter(s => s.level < s.maxLevel);
+                        if (availableSkills.length > 0) {
+                            const randomSkill = availableSkills[Math.floor(Math.random() * availableSkills.length)];
+                            upgradeSkill(randomSkill.id);
+                        }
+                    }
+                    
+                    // 移除经验球
+                    xpOrbs.splice(i, 1);
+                    
+                    // 更新UI
+                    updateUI();
+                }
+            }
+        }
+        
+        // 更新伤害数字
+        function updateDamageTexts() {
+            for (let i = damageTexts.length - 1; i >= 0; i--) {
+                const damageText = damageTexts[i];
+                
+                // 更新位置和透明度
+                damageText.y -= 0.5;
+                damageText.life--;
+                damageText.opacity = damageText.life / 60;
+                
+                // 绘制伤害数字
+                ctx.font = 'bold 18px Arial';
+                ctx.fillStyle = `rgba(255, 50, 50, ${damageText.opacity})`;
+                ctx.textAlign = 'center';
+                ctx.fillText(damageText.text, damageText.x, damageText.y);
+                
+                // 移除已经消失的伤害数字
+                if (damageText.life <= 0) {
+                    damageTexts.splice(i, 1);
+                }
+            }
+        }
+        
+        // 玩家攻击
+        function playerAttack() {
+            const currentTime = Date.now();
+            const timeSinceLastAttack = currentTime - player.lastAttackTime;
+            const attackInterval = 1000 / player.attackSpeed;
+            
+            if (timeSinceLastAttack >= attackInterval) {
+                // 攻击所有在范围内的敌人
+                for (let i = 0; i < enemies.length; i++) {
+                    const enemy = enemies[i];
+                    
+                    // 计算距离
+                    const dx = player.x - enemy.x;
+                    const dy = player.y - enemy.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    // 如果敌人在攻击范围内
+                    if (distance < player.attackRange) {
+                        // 造成伤害
+                        enemy.hp -= player.damage;
+                        
+                        // 显示伤害数字
+                        showDamageText(enemy.x, enemy.y - enemy.radius, player.damage);
+                        
+                        // 绘制攻击效果
+                        ctx.strokeStyle = 'rgba(0, 212, 255, 0.7)';
+                        ctx.lineWidth = 3;
+                        ctx.beginPath();
+                        ctx.moveTo(player.x, player.y);
+                        ctx.lineTo(enemy.x, enemy.y);
+                        ctx.stroke();
+                    }
+                }
+                
+                player.lastAttackTime = currentTime;
+            }
+            
+            // 绘制攻击范围（视觉反馈）
+            ctx.strokeStyle = 'rgba(0, 212, 255, 0.2)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(player.x, player.y, player.attackRange, 0, Math.PI * 2);
+            ctx.stroke();
+        }
+        
+        // 敌人攻击玩家
+        function enemyAttack() {
+            for (let i = 0; i < enemies.length; i++) {
+                const enemy = enemies[i];
+                
+                // 计算距离
+                const dx = player.x - enemy.x;
+                const dy = player.y - enemy.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                // 如果敌人接触到玩家
+                if (distance < player.radius + enemy.radius) {
+                    // 对玩家造成伤害
+                    player.hp -= enemy.damage / 60; // 每帧造成伤害
+                    
+                    // 更新UI
+                    updateUI();
+                    
+                    // 检查玩家是否死亡
+                    if (player.hp <= 0) {
+                        gameOver();
+                    }
+                }
+            }
+        }
+        
+        // 更新UI
+        function updateUI() {
+            document.getElementById('level').textContent = player.level;
+            document.getElementById('hp').textContent = Math.ceil(player.hp);
+            document.getElementById('xp').textContent = `${player.xp}/${player.xpToNextLevel}`;
+            document.getElementById('gold').textContent = player.gold;
+            
+            // 更新生命条
+            const hpPercent = (player.hp / player.maxHp) * 100;
+            document.getElementById('hp-bar').style.width = `${hpPercent}%`;
+            
+            // 更新经验条
+            const xpPercent = (player.xp / player.xpToNextLevel) * 100;
+            document.getElementById('xp-bar').style.width = `${xpPercent}%`;
+            
+            // 更新升级项的可用性
+            upgrades.forEach(upgrade => {
+                if (player.gold >= upgrade.cost) {
+                    upgrade.element.classList.remove('disabled');
+                } else {
+                    upgrade.element.classList.add('disabled');
+                }
+            });
+        }
+        
+        // 暂停/继续游戏
+        function togglePause() {
+            gameRunning = !gameRunning;
+            const pauseBtn = document.getElementById('pause-btn');
+            
+            if (gameRunning) {
+                pauseBtn.innerHTML = '<i class="fas fa-pause"></i> 暂停';
+                gameLoop();
+            } else {
+                pauseBtn.innerHTML = '<i class="fas fa-play"></i> 继续';
+                cancelAnimationFrame(animationId);
+            }
+        }
+        
+        // 游戏结束
+        function gameOver() {
+            gameRunning = false;
+            cancelAnimationFrame(animationId);
+            
+            // 显示游戏结束消息
+            document.getElementById('final-level').textContent = player.level;
+            document.getElementById('final-enemies').textContent = totalEnemiesKilled;
+            document.getElementById('game-over-message').style.display = 'block';
+        }
+        
+        // 重新开始游戏
+        function restartGame() {
+            // 重置游戏状态
+            player = {
+                x: 400,
+                y: 300,
+                radius: 20,
+                speed: 5,
+                maxHp: 100,
+                hp: 100,
+                damage: 10,
+                attackSpeed: 10,
+                attackRange: 100,
+                lastAttackTime: 0,
+                level: 1,
+                xp: 0,
+                xpToNextLevel: 100,
+                gold: 50
+            };
+            
+            enemies = [];
+            xpOrbs = [];
+            damageTexts = [];
+            gameRunning = true;
+            gameTime = 0;
+            enemyCount = 0;
+            totalEnemiesKilled = 0;
+            
+            // 重置技能
+            skills.forEach(skill => {
+                skill.level = 0;
+                skill.element.querySelector('.skill-level').textContent = `0/${skill.maxLevel}`;
+                skill.progressBar.style.width = '0%';
+            });
+            
+            // 重置升级项
+            initUpgrades();
+            
+            // 隐藏游戏结束消息
+            document.getElementById('game-over-message').style.display = 'none';
+            
+            // 更新玩家位置
+            player.x = canvas.width / 2;
+            player.y = canvas.height / 2;
+            updatePlayerPosition();
+            
+            // 生成初始敌人
+            spawnEnemies(10);
+            
+            // 更新UI
+            updateUI();
+            
+            // 开始游戏循环
+            gameLoop();
+        }
+        
+        // 初始化游戏
+        window.onload = initGame;
+    </script>
+</body>
+</html>
