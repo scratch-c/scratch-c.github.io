@@ -25,8 +25,200 @@
             justify-content: center;
         }
         
-        .game-container {
+        /* 难度选择界面样式 */
+        .difficulty-selection {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
             display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+        
+        .difficulty-title {
+            font-size: 48px;
+            color: #00d4ff;
+            margin-bottom: 40px;
+            text-shadow: 0 0 15px rgba(0, 212, 255, 0.7);
+            text-align: center;
+        }
+        
+        .difficulty-subtitle {
+            font-size: 20px;
+            color: #a0d2ff;
+            margin-bottom: 60px;
+            max-width: 800px;
+            text-align: center;
+            line-height: 1.6;
+        }
+        
+        .difficulty-options {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 50px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .difficulty-option {
+            background: rgba(0, 20, 40, 0.8);
+            border-radius: 15px;
+            padding: 30px;
+            width: 280px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 3px solid transparent;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .difficulty-option:hover {
+            transform: translateY(-10px);
+            border-color: #00aaff;
+            box-shadow: 0 10px 25px rgba(0, 170, 255, 0.3);
+        }
+        
+        .difficulty-option.selected {
+            border-color: #00d4ff;
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.5);
+        }
+        
+        .difficulty-icon {
+            font-size: 50px;
+            margin-bottom: 20px;
+        }
+        
+        .difficulty-name {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+        
+        .difficulty-desc {
+            font-size: 16px;
+            color: #a0d2ff;
+            line-height: 1.5;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .difficulty-stats {
+            width: 100%;
+            margin-top: 15px;
+        }
+        
+        .difficulty-stat {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .difficulty-label {
+            color: #80c0ff;
+        }
+        
+        .difficulty-value {
+            font-weight: 600;
+        }
+        
+        .difficulty-value.easy {
+            color: #00ff88;
+        }
+        
+        .difficulty-value.medium {
+            color: #ffcc00;
+        }
+        
+        .difficulty-value.hard {
+            color: #ff4444;
+        }
+        
+        .start-game-btn {
+            background: linear-gradient(to bottom, #00aaff, #0066cc);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 18px 50px;
+            font-size: 24px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+        }
+        
+        .start-game-btn:hover {
+            background: linear-gradient(to bottom, #00bbff, #0077dd);
+            box-shadow: 0 0 25px rgba(0, 170, 255, 0.7);
+            transform: scale(1.05);
+        }
+        
+        .start-game-btn:disabled {
+            background: #555;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .difficulty-change-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 40, 80, 0.8);
+            color: #00d4ff;
+            border: 2px solid #00aaff;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            z-index: 100;
+        }
+        
+        .difficulty-change-btn:hover {
+            background: rgba(0, 60, 120, 0.9);
+            box-shadow: 0 0 15px rgba(0, 170, 255, 0.5);
+        }
+        
+        .current-difficulty {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: 700;
+            border: 2px solid;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .current-difficulty.easy {
+            border-color: #00ff88;
+            color: #00ff88;
+        }
+        
+        .current-difficulty.medium {
+            border-color: #ffcc00;
+            color: #ffcc00;
+        }
+        
+        .current-difficulty.hard {
+            border-color: #ff4444;
+            color: #ff4444;
+        }
+        
+        .game-container {
+            display: none; /* 初始隐藏，选择难度后显示 */
             flex-direction: column;
             width: 100%;
             max-width: 1200px;
@@ -110,6 +302,7 @@
             display: flex;
             flex: 1;
             position: relative;
+            min-height: 0;
         }
         
         .game-area {
@@ -126,8 +319,6 @@
             width: 100%;
             height: 100%;
         }
-        
-        /* 删除原来的 .player 样式，改为在 Canvas 中绘制 */
         
         .enemy {
             position: absolute;
@@ -157,36 +348,68 @@
             flex-direction: column;
             border-left: 2px solid #00aaff;
             max-width: 300px;
+            min-width: 250px;
+            overflow: hidden;
         }
         
         .upgrade-section {
-            margin-bottom: 25px;
+            margin-bottom: 15px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
         }
         
         .section-title {
-            font-size: 20px;
+            font-size: 18px;
             color: #00d4ff;
-            margin-bottom: 15px;
-            padding-bottom: 8px;
+            margin-bottom: 12px;
+            padding-bottom: 6px;
             border-bottom: 2px solid rgba(0, 212, 255, 0.3);
+            flex-shrink: 0;
         }
         
         .upgrade-list {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
+            max-height: 180px;
+            min-height: 180px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-right: 5px;
+            flex: 1;
+        }
+        
+        .upgrade-list::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .upgrade-list::-webkit-scrollbar-track {
+            background: rgba(0, 30, 60, 0.3);
+            border-radius: 3px;
+        }
+        
+        .upgrade-list::-webkit-scrollbar-thumb {
+            background: rgba(0, 170, 255, 0.5);
+            border-radius: 3px;
+        }
+        
+        .upgrade-list::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 212, 255, 0.7);
         }
         
         .upgrade-item {
             background: rgba(0, 40, 80, 0.6);
-            border-radius: 8px;
-            padding: 12px;
+            border-radius: 6px;
+            padding: 10px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             cursor: pointer;
             transition: all 0.2s;
             border: 1px solid rgba(0, 150, 255, 0.3);
+            flex-shrink: 0;
         }
         
         .upgrade-item:hover {
@@ -202,42 +425,78 @@
         
         .upgrade-info {
             flex: 1;
+            min-width: 0;
         }
         
         .upgrade-name {
             font-weight: 600;
             color: #fff;
-            margin-bottom: 5px;
+            margin-bottom: 3px;
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         
         .upgrade-desc {
-            font-size: 12px;
+            font-size: 11px;
             color: #a0d2ff;
+            line-height: 1.3;
         }
         
         .upgrade-cost {
             color: #ffcc00;
             font-weight: 700;
-            font-size: 18px;
-            margin-left: 10px;
+            font-size: 16px;
+            margin-left: 8px;
+            flex-shrink: 0;
         }
         
         .skills-section {
             flex: 1;
-            overflow-y: auto;
+            min-height: 150px;
+            max-height: 200px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            margin-bottom: 15px;
         }
         
         .skills-list {
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 10px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-right: 5px;
+            flex: 1;
+            min-height: 0;
+        }
+        
+        .skills-list::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .skills-list::-webkit-scrollbar-track {
+            background: rgba(0, 30, 60, 0.3);
+            border-radius: 3px;
+        }
+        
+        .skills-list::-webkit-scrollbar-thumb {
+            background: rgba(150, 0, 255, 0.5);
+            border-radius: 3px;
+        }
+        
+        .skills-list::-webkit-scrollbar-thumb:hover {
+            background: rgba(180, 0, 255, 0.7);
         }
         
         .skill-item {
             background: rgba(30, 0, 60, 0.6);
-            border-radius: 8px;
-            padding: 12px;
+            border-radius: 6px;
+            padding: 10px;
             border: 1px solid rgba(150, 0, 255, 0.3);
+            flex-shrink: 0;
         }
         
         .skill-name {
@@ -246,19 +505,21 @@
             margin-bottom: 5px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
+            font-size: 14px;
         }
         
         .skill-level {
             color: #ffcc00;
             margin-left: auto;
+            font-size: 13px;
         }
         
         .skill-progress {
-            height: 6px;
+            height: 5px;
             background: rgba(255, 255, 255, 0.1);
             border-radius: 3px;
-            margin-top: 8px;
+            margin-top: 6px;
             overflow: hidden;
         }
         
@@ -271,18 +532,20 @@
         .controls {
             display: flex;
             justify-content: center;
-            gap: 15px;
-            margin-top: 20px;
+            gap: 12px;
+            margin-top: 15px;
+            flex-shrink: 0;
         }
         
         .btn {
-            padding: 12px 24px;
+            padding: 10px 20px;
             border: none;
-            border-radius: 8px;
+            border-radius: 6px;
             font-weight: 700;
             cursor: pointer;
             transition: all 0.2s;
-            font-size: 16px;
+            font-size: 14px;
+            flex: 1;
         }
         
         .btn-primary {
@@ -396,6 +659,17 @@
             border: 1px solid rgba(255, 0, 0, 0.5);
         }
         
+        .time-display {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 100, 200, 0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: 700;
+            border: 1px solid rgba(0, 100, 200, 0.5);
+        }
+        
         @media (max-width: 1024px) {
             .game-container {
                 height: 95vh;
@@ -404,6 +678,25 @@
             
             .sidebar {
                 max-width: 250px;
+                min-width: 220px;
+            }
+            
+            .upgrade-list {
+                max-height: 160px;
+                min-height: 160px;
+            }
+            
+            .skills-section {
+                max-height: 180px;
+            }
+            
+            .difficulty-options {
+                gap: 20px;
+            }
+            
+            .difficulty-option {
+                width: 250px;
+                padding: 20px;
             }
         }
         
@@ -414,7 +707,9 @@
             
             .sidebar {
                 max-width: 100%;
+                min-width: unset;
                 max-height: 40vh;
+                padding: 15px;
             }
             
             .game-area {
@@ -430,11 +725,191 @@
                 min-width: 100px;
                 padding: 5px 10px;
             }
+            
+            .upgrade-list {
+                max-height: 140px;
+                min-height: 140px;
+            }
+            
+            .skills-section {
+                max-height: 150px;
+            }
+            
+            .btn {
+                padding: 8px 16px;
+                font-size: 13px;
+            }
+            
+            .difficulty-title {
+                font-size: 36px;
+                margin-bottom: 30px;
+            }
+            
+            .difficulty-subtitle {
+                font-size: 18px;
+                margin-bottom: 40px;
+                padding: 0 20px;
+            }
+            
+            .difficulty-options {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .difficulty-option {
+                width: 90%;
+                max-width: 350px;
+            }
+            
+            .start-game-btn {
+                padding: 15px 40px;
+                font-size: 20px;
+            }
+        }
+        
+        @media (max-height: 700px) {
+            .game-container {
+                height: 97vh;
+            }
+            
+            .sidebar {
+                padding: 12px;
+            }
+            
+            .upgrade-list {
+                max-height: 130px;
+                min-height: 130px;
+                gap: 6px;
+            }
+            
+            .upgrade-item {
+                padding: 8px;
+            }
+            
+            .skills-section {
+                max-height: 120px;
+            }
+            
+            .skill-item {
+                padding: 8px;
+            }
+            
+            .controls {
+                margin-top: 10px;
+            }
+            
+            .difficulty-title {
+                font-size: 36px;
+                margin-bottom: 20px;
+            }
+            
+            .difficulty-subtitle {
+                font-size: 16px;
+                margin-bottom: 30px;
+            }
+            
+            .difficulty-option {
+                padding: 20px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="game-container">
+    <!-- 难度选择界面 -->
+    <div class="difficulty-selection" id="difficulty-selection">
+        <h1 class="difficulty-title">选择游戏难度</h1>
+        <p class="difficulty-subtitle">难度将影响敌人的数量、强度和增长速度。选择适合你的挑战等级！</p>
+        
+        <div class="difficulty-options">
+            <div class="difficulty-option" data-difficulty="easy">
+                <i class="fas fa-seedling difficulty-icon" style="color: #00ff88;"></i>
+                <div class="difficulty-name" style="color: #00ff88;">简单模式</div>
+                <div class="difficulty-desc">适合新手玩家，敌人较少且较弱，成长速度慢。</div>
+                <div class="difficulty-stats">
+                    <div class="difficulty-stat">
+                        <span class="difficulty-label">敌人数量:</span>
+                        <span class="difficulty-value easy">较少</span>
+                    </div>
+                    <div class="difficulty-stat">
+                        <span class="difficulty-label">敌人强度:</span>
+                        <span class="difficulty-value easy">较低</span>
+                    </div>
+                    <div class="difficulty-stat">
+                        <span class="difficulty-label">成长速度:</span>
+                        <span class="difficulty-value easy">较慢</span>
+                    </div>
+                    <div class="difficulty-stat">
+                        <span class="difficulty-label">玩家初始属性:</span>
+                        <span class="difficulty-value easy">增强</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="difficulty-option selected" data-difficulty="medium">
+                <i class="fas fa-balance-scale difficulty-icon" style="color: #ffcc00;"></i>
+                <div class="difficulty-name" style="color: #ffcc00;">中等模式</div>
+                <div class="difficulty-desc">标准难度，平衡的挑战性，适合大多数玩家。</div>
+                <div class="difficulty-stats">
+                    <div class="difficulty-stat">
+                        <span class="difficulty-label">敌人数量:</span>
+                        <span class="difficulty-value medium">中等</span>
+                    </div>
+                    <div class="difficulty-stat">
+                        <span class="difficulty-label">敌人强度:</span>
+                        <span class="difficulty-value medium">中等</span>
+                    </div>
+                    <div class="difficulty-stat">
+                        <span class="difficulty-label">成长速度:</span>
+                        <span class="difficulty-value medium">标准</span>
+                    </div>
+                    <div class="difficulty-stat">
+                        <span class="difficulty-label">玩家初始属性:</span>
+                        <span class="difficulty-value medium">标准</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="difficulty-option" data-difficulty="hard">
+                <i class="fas fa-skull-crossbones difficulty-icon" style="color: #ff4444;"></i>
+                <div class="difficulty-name" style="color: #ff4444;">困难模式</div>
+                <div class="difficulty-desc">极具挑战性，敌人数量多且强大，成长迅速。</div>
+                <div class="difficulty-stats">
+                    <div class="difficulty-stat">
+                        <span class="difficulty-label">敌人数量:</span>
+                        <span class="difficulty-value hard">大量</span>
+                    </div>
+                    <div class="difficulty-stat">
+                        <span class="difficulty-label">敌人强度:</span>
+                        <span class="difficulty-value hard">极高</span>
+                    </div>
+                    <div class="difficulty-stat">
+                        <span class="difficulty-label">成长速度:</span>
+                        <span class="difficulty-value hard">极快</span>
+                    </div>
+                    <div class="difficulty-stat">
+                        <span class="difficulty-label">玩家初始属性:</span>
+                        <span class="difficulty-value hard">削弱</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <button class="start-game-btn" id="start-game-btn">
+            <i class="fas fa-play"></i> 开始游戏
+        </button>
+    </div>
+    
+    <!-- 游戏主界面 -->
+    <div class="game-container" id="game-container">
+        <button class="difficulty-change-btn" id="difficulty-change-btn">
+            <i class="fas fa-cog"></i> 更改难度
+        </button>
+        
+        <div class="current-difficulty medium" id="current-difficulty">
+            <i class="fas fa-balance-scale"></i>
+            <span>中等难度</span>
+        </div>
+        
         <div class="game-header">
             <div class="game-title">
                 <i class="fas fa-fire"></i> 暴爽割草打怪升级
@@ -468,14 +943,16 @@
         <div class="game-content">
             <div class="game-area">
                 <canvas id="game-canvas"></canvas>
-                <!-- 删除原来的 player div -->
                 <div class="enemy-count">敌人: <span id="enemy-count">0</span></div>
+                <div class="time-display">时间: <span id="game-time">0</span>秒</div>
                 <div class="instructions">
                     <h3>游戏说明</h3>
                     <p>移动鼠标控制角色</p>
                     <p>自动攻击周围敌人</p>
                     <p>收集经验球升级</p>
                     <p>升级后购买能力提升</p>
+                    <p>吸取范围: <span id="xp-range-value">150</span>px</p>
+                    <p>敌人随时间变强!</p>
                 </div>
                 <div class="level-up-effect" id="level-up-effect"></div>
             </div>
@@ -509,7 +986,7 @@
     
     <div id="game-over-message" class="game-message">
         <h2 class="message-title">游戏结束!</h2>
-        <p class="message-text" id="final-stats">你达到了 <span id="final-level">1</span> 级，击败了 <span id="final-enemies">0</span> 个敌人</p>
+        <p class="message-text" id="final-stats">你生存了 <span id="final-time">0</span> 秒，达到了 <span id="final-level">1</span> 级，击败了 <span id="final-enemies">0</span> 个敌人</p>
         <button id="restart-game-btn" class="btn btn-primary">
             <i class="fas fa-play"></i> 重新开始
         </button>
@@ -526,8 +1003,9 @@
             maxHp: 100,
             hp: 100,
             damage: 10,
-            attackSpeed: 10, // 每秒攻击次数
+            attackSpeed: 10,
             attackRange: 100,
+            xpRange: 150,
             lastAttackTime: 0,
             level: 1,
             xp: 0,
@@ -546,6 +1024,75 @@
         let totalEnemiesKilled = 0;
         let animationId;
         
+        // 游戏难度（默认中等）
+        let gameDifficulty = "medium";
+        
+        // 难度设置
+        const difficultySettings = {
+            easy: {
+                name: "简单",
+                color: "#00ff88",
+                playerMultiplier: 1.3, // 玩家属性增强30%
+                enemyMultiplier: 0.6, // 敌人属性降低40%
+                spawnMultiplier: 0.7, // 敌人生成减少30%
+                growthMultiplier: 0.6, // 敌人成长速度降低40%
+                description: "适合新手玩家，敌人较少且较弱"
+            },
+            medium: {
+                name: "中等",
+                color: "#ffcc00",
+                playerMultiplier: 1.0, // 标准玩家属性
+                enemyMultiplier: 1.0, // 标准敌人属性
+                spawnMultiplier: 1.0, // 标准敌人生成
+                growthMultiplier: 1.0, // 标准成长速度
+                description: "标准难度，平衡的挑战性"
+            },
+            hard: {
+                name: "困难",
+                color: "#ff4444",
+                playerMultiplier: 0.7, // 玩家属性降低30%
+                enemyMultiplier: 1.5, // 敌人属性增强50%
+                spawnMultiplier: 1.5, // 敌人生成增加50%
+                growthMultiplier: 1.5, // 敌人成长速度增加50%
+                description: "极具挑战性，敌人数量多且强大"
+            }
+        };
+        
+        // 基础游戏难度参数
+        const baseDifficultySettings = {
+            baseEnemyHp: 20,
+            hpGrowthPerMinute: 60,
+            baseEnemyDamage: 15,
+            damageGrowthPerMinute: 8,
+            baseEnemySpeed: 1.5,
+            speedGrowthPerMinute: 0.5,
+            baseEnemyRadius: 12,
+            radiusGrowthPerMinute: 0.8,
+            enemySpawnRate: 20,
+            spawnRateGrowthPerMinute: 8,
+            difficultyMultiplierGrowth: 2.0,
+            maxEnemiesLimit: 100
+        };
+        
+        // 获取当前难度设置
+        function getCurrentDifficultySettings() {
+            const diff = difficultySettings[gameDifficulty];
+            return {
+                baseEnemyHp: baseDifficultySettings.baseEnemyHp * diff.enemyMultiplier,
+                hpGrowthPerMinute: baseDifficultySettings.hpGrowthPerMinute * diff.growthMultiplier,
+                baseEnemyDamage: baseDifficultySettings.baseEnemyDamage * diff.enemyMultiplier,
+                damageGrowthPerMinute: baseDifficultySettings.damageGrowthPerMinute * diff.growthMultiplier,
+                baseEnemySpeed: baseDifficultySettings.baseEnemySpeed * diff.enemyMultiplier,
+                speedGrowthPerMinute: baseDifficultySettings.speedGrowthPerMinute * diff.growthMultiplier,
+                baseEnemyRadius: baseDifficultySettings.baseEnemyRadius * diff.enemyMultiplier,
+                radiusGrowthPerMinute: baseDifficultySettings.radiusGrowthPerMinute * diff.growthMultiplier,
+                enemySpawnRate: baseDifficultySettings.enemySpawnRate * diff.spawnMultiplier,
+                spawnRateGrowthPerMinute: baseDifficultySettings.spawnRateGrowthPerMinute * diff.growthMultiplier,
+                difficultyMultiplierGrowth: baseDifficultySettings.difficultyMultiplierGrowth * diff.growthMultiplier,
+                maxEnemiesLimit: baseDifficultySettings.maxEnemiesLimit * diff.spawnMultiplier
+            };
+        }
+        
         // 升级项数据
         const upgradeData = [
             { id: 1, name: "攻击力+", description: "增加10%攻击力", cost: 30, effect: "damage", value: 1.1 },
@@ -553,7 +1100,8 @@
             { id: 3, name: "攻击范围+", description: "增加20%攻击范围", cost: 35, effect: "attackRange", value: 1.2 },
             { id: 4, name: "最大生命值+", description: "增加20%最大生命值", cost: 50, effect: "maxHp", value: 1.2 },
             { id: 5, name: "移动速度+", description: "增加15%移动速度", cost: 30, effect: "speed", value: 1.15 },
-            { id: 6, name: "生命恢复", description: "每秒恢复2%生命值", cost: 60, effect: "hpRegen", value: 0.02 }
+            { id: 6, name: "生命恢复", description: "每秒恢复2%生命值", cost: 60, effect: "hpRegen", value: 0.02 },
+            { id: 7, name: "吸取范围+", description: "增加25%经验球吸取范围", cost: 40, effect: "xpRange", value: 1.25 }
         ];
         
         // 技能数据
@@ -567,6 +1115,9 @@
         
         // 初始化游戏
         function initGame() {
+            // 设置玩家初始属性（根据难度调整）
+            applyDifficultyToPlayer();
+            
             canvas = document.getElementById('game-canvas');
             ctx = canvas.getContext('2d');
             
@@ -584,8 +1135,8 @@
             // 初始化技能
             initSkills();
             
-            // 添加敌人
-            spawnEnemies(10);
+            // 添加初始敌人
+            spawnEnemies(getInitialEnemyCount());
             
             // 设置游戏循环
             gameLoop();
@@ -600,6 +1151,29 @@
             
             // 初始更新UI
             updateUI();
+            
+            // 更新当前难度显示
+            updateCurrentDifficultyDisplay();
+        }
+        
+        // 根据难度调整玩家初始属性
+        function applyDifficultyToPlayer() {
+            const diff = difficultySettings[gameDifficulty];
+            
+            // 调整玩家属性
+            player.maxHp = Math.round(100 * diff.playerMultiplier);
+            player.hp = player.maxHp;
+            player.damage = Math.round(10 * diff.playerMultiplier);
+            player.speed = 5 * diff.playerMultiplier;
+            player.attackRange = 100 * diff.playerMultiplier;
+            player.xpRange = 150 * diff.playerMultiplier;
+            player.gold = Math.round(50 * diff.playerMultiplier);
+        }
+        
+        // 获取初始敌人数（根据难度）
+        function getInitialEnemyCount() {
+            const diff = difficultySettings[gameDifficulty];
+            return Math.round(20 * diff.spawnMultiplier);
         }
         
         // 调整Canvas尺寸
@@ -607,6 +1181,32 @@
             const gameArea = document.querySelector('.game-area');
             canvas.width = gameArea.clientWidth;
             canvas.height = gameArea.clientHeight;
+        }
+        
+        // 计算当前游戏难度
+        function getDifficultyMultiplier() {
+            const currentSettings = getCurrentDifficultySettings();
+            const minutes = gameTime / 60;
+            return 1 + (minutes * currentSettings.difficultyMultiplierGrowth);
+        }
+        
+        // 计算敌人属性（基于游戏时间和难度）
+        function calculateEnemyStats() {
+            const currentSettings = getCurrentDifficultySettings();
+            const multiplier = getDifficultyMultiplier();
+            
+            const exponentialMultiplier = Math.pow(1.15, multiplier);
+            
+            return {
+                hp: Math.round(currentSettings.baseEnemyHp * exponentialMultiplier + 
+                    (currentSettings.hpGrowthPerMinute * multiplier)),
+                damage: Math.round(currentSettings.baseEnemyDamage * exponentialMultiplier + 
+                    (currentSettings.damageGrowthPerMinute * multiplier)),
+                speed: currentSettings.baseEnemySpeed * exponentialMultiplier + 
+                    (currentSettings.speedGrowthPerMinute * multiplier),
+                radius: currentSettings.baseEnemyRadius * exponentialMultiplier + 
+                    (currentSettings.radiusGrowthPerMinute * multiplier)
+            };
         }
         
         // 绘制玩家
@@ -629,6 +1229,25 @@
             ctx.beginPath();
             ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
             ctx.stroke();
+            
+            // 绘制吸取范围（半透明效果）
+            ctx.strokeStyle = 'rgba(0, 255, 128, 0.15)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(player.x, player.y, player.xpRange, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            // 绘制吸取范围的内发光效果
+            const gradient = ctx.createRadialGradient(
+                player.x, player.y, player.xpRange - 10,
+                player.x, player.y, player.xpRange
+            );
+            gradient.addColorStop(0, 'rgba(0, 255, 128, 0.1)');
+            gradient.addColorStop(1, 'rgba(0, 255, 128, 0)');
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(player.x, player.y, player.xpRange, 0, Math.PI * 2);
+            ctx.fill();
         }
         
         // 初始化升级项
@@ -718,6 +1337,9 @@
                 case 'hpRegen':
                     // 生命恢复在游戏循环中处理
                     break;
+                case 'xpRange':
+                    player.xpRange *= upgrade.value;
+                    break;
             }
             
             // 增加升级成本
@@ -758,6 +1380,7 @@
                 case 5: // 狂暴模式
                     player.damage = Math.round(player.damage * 1.25);
                     player.attackSpeed *= 1.2;
+                    player.xpRange *= 1.15;
                     break;
             }
             
@@ -780,6 +1403,8 @@
         
         // 生成敌人
         function spawnEnemies(count) {
+            const enemyStats = calculateEnemyStats();
+            
             for (let i = 0; i < count; i++) {
                 // 随机生成在屏幕边缘
                 let x, y;
@@ -791,22 +1416,20 @@
                     y = Math.random() < 0.5 ? -20 : canvas.height + 20;
                 }
                 
-                // 根据游戏时间增加敌人难度
-                const enemyLevel = Math.floor(gameTime / 30) + 1;
-                const enemyHp = 20 + enemyLevel * 10;
-                const enemyDamage = 5 + enemyLevel * 2;
-                const enemySpeed = 1 + enemyLevel * 0.1;
-                const enemyRadius = 12 + enemyLevel * 1.5;
+                // 根据游戏时间计算敌人等级
+                const enemyLevel = Math.floor(gameTime / 8) + 1;
                 
+                // 使用计算出的敌人属性
                 enemies.push({
                     x,
                     y,
-                    radius: enemyRadius,
-                    speed: enemySpeed,
-                    hp: enemyHp,
-                    maxHp: enemyHp,
-                    damage: enemyDamage,
-                    color: `hsl(${Math.min(enemyLevel * 10, 360)}, 80%, 50%)`
+                    radius: enemyStats.radius,
+                    speed: enemyStats.speed,
+                    hp: enemyStats.hp,
+                    maxHp: enemyStats.hp,
+                    damage: enemyStats.damage,
+                    level: enemyLevel,
+                    color: `hsl(${Math.min(enemyLevel * 25, 360)}, 80%, 50%)`
                 });
                 
                 enemyCount++;
@@ -823,7 +1446,8 @@
                 y,
                 radius,
                 amount,
-                color: `hsl(${120 + amount * 5}, 100%, 50%)`
+                color: `hsl(${120 + amount * 5}, 100%, 50%)`,
+                collected: false
             });
         }
         
@@ -833,7 +1457,7 @@
                 x,
                 y,
                 text: `-${damage}`,
-                life: 60, // 帧数
+                life: 60,
                 opacity: 1
             });
         }
@@ -855,6 +1479,9 @@
             
             // 更新时间
             gameTime += 1/60;
+            
+            // 更新游戏时间显示
+            document.getElementById('game-time').textContent = Math.floor(gameTime);
             
             // 清除Canvas
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -880,9 +1507,23 @@
             // 敌人攻击玩家
             enemyAttack();
             
-            // 生成新敌人
-            if (enemies.length < 5 + Math.floor(gameTime / 10)) {
-                spawnEnemies(1);
+            // 根据难度设置生成新敌人
+            const currentSettings = getCurrentDifficultySettings();
+            const difficultyMultiplier = getDifficultyMultiplier();
+            const maxEnemies = currentSettings.enemySpawnRate + 
+                (currentSettings.spawnRateGrowthPerMinute * difficultyMultiplier);
+            
+            // 始终检查是否需要生成敌人
+            if (enemies.length < Math.min(maxEnemies, currentSettings.maxEnemiesLimit)) {
+                // 每次生成的数量随难度增加
+                const spawnCount = 2 + Math.floor(difficultyMultiplier * 3);
+                spawnEnemies(spawnCount);
+            }
+            
+            // 每2秒增加一波敌人
+            if (gameTime % 2 < 1/60 && enemies.length < currentSettings.maxEnemiesLimit * 0.8) {
+                const waveCount = Math.floor(difficultyMultiplier) + 8;
+                spawnEnemies(waveCount);
             }
             
             // 生命恢复
@@ -891,17 +1532,54 @@
                 updateUI();
             }
             
-            // 随机升级技能
-            if (Math.random() < 0.001) {
-                const availableSkills = skills.filter(s => s.level < s.maxLevel);
-                if (availableSkills.length > 0) {
-                    const randomSkill = availableSkills[Math.floor(Math.random() * availableSkills.length)];
-                    upgradeSkill(randomSkill.id);
-                }
-            }
+            // 绘制难度指示器（右上角）
+            drawDifficultyIndicator();
             
             // 继续游戏循环
             animationId = requestAnimationFrame(gameLoop);
+        }
+        
+        // 绘制难度指示器
+        function drawDifficultyIndicator() {
+            const difficulty = getDifficultyMultiplier();
+            const difficultyLevel = Math.floor(difficulty);
+            
+            // 在右上角绘制难度指示器
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+            ctx.fillRect(canvas.width - 120, 10, 110, 30);
+            
+            ctx.strokeStyle = difficultySettings[gameDifficulty].color;
+            ctx.lineWidth = 2;
+            ctx.strokeRect(canvas.width - 120, 10, 110, 30);
+            
+            ctx.font = 'bold 14px Arial';
+            ctx.fillStyle = difficultySettings[gameDifficulty].color;
+            ctx.textAlign = 'center';
+            ctx.fillText(`${difficultySettings[gameDifficulty].name}难度`, canvas.width - 65, 30);
+            
+            // 绘制难度条
+            const barWidth = 100;
+            const barHeight = 5;
+            const barX = canvas.width - 115;
+            const barY = 35;
+            
+            // 背景
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+            ctx.fillRect(barX, barY, barWidth, barHeight);
+            
+            // 进度（限制在0-1之间）
+            const progress = Math.min(difficulty / 5, 1);
+            
+            // 根据进度改变颜色
+            let color;
+            if (progress < 0.3) color = '#00ff00';
+            else if (progress < 0.6) color = '#ffff00';
+            else if (progress < 0.8) color = '#ff9900';
+            else color = '#ff0000';
+            
+            // 进度条
+            ctx.fillStyle = color;
+            ctx.fillRect(barX, barY, barWidth * progress, barHeight);
         }
         
         // 绘制背景网格
@@ -948,7 +1626,7 @@
                 ctx.arc(enemy.x, enemy.y, enemy.radius, 0, Math.PI * 2);
                 ctx.fill();
                 
-                // 绘制敌人生命条
+                // 绘制敌人生命条（只在敌人受伤时显示）
                 if (enemy.hp < enemy.maxHp) {
                     const hpPercent = enemy.hp / enemy.maxHp;
                     const barWidth = enemy.radius * 2;
@@ -961,14 +1639,26 @@
                     ctx.fillRect(enemy.x - enemy.radius, enemy.y - enemy.radius - 10, barWidth * hpPercent, barHeight);
                 }
                 
+                // 在敌人上方显示等级（只有高级敌人才显示）
+                if (enemy.level >= 3) {
+                    ctx.font = 'bold 10px Arial';
+                    ctx.fillStyle = '#ffffff';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(`Lv.${enemy.level}`, enemy.x, enemy.y - enemy.radius - 15);
+                }
+                
                 // 检查敌人是否死亡
                 if (enemy.hp <= 0) {
-                    // 生成经验球
-                    const xpAmount = Math.floor(enemy.maxHp / 10);
+                    // 生成经验球（经验值也随难度增加）
+                    const baseXp = Math.floor(enemy.maxHp / 10);
+                    const difficultyBonus = Math.floor(getDifficultyMultiplier() * 5);
+                    const xpAmount = baseXp + difficultyBonus;
                     spawnXpOrb(enemy.x, enemy.y, xpAmount);
                     
-                    // 增加金币
-                    player.gold += Math.floor(enemy.maxHp / 20);
+                    // 增加金币（金币也随难度增加）
+                    const baseGold = Math.floor(enemy.maxHp / 20);
+                    const goldBonus = Math.floor(getDifficultyMultiplier() * 2.5);
+                    player.gold += baseGold + goldBonus;
                     
                     // 移除敌人
                     enemies.splice(i, 1);
@@ -990,11 +1680,24 @@
                 const dy = player.y - orb.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
                 
-                // 如果经验球靠近玩家，则飞向玩家
-                if (distance < player.radius + orb.radius + 100) {
-                    const speed = 3 + (100 / distance);
+                // 如果经验球在吸取范围内，则飞向玩家
+                if (distance < player.xpRange) {
+                    // 计算飞向玩家的速度（距离越近速度越快）
+                    const speed = 5 + (player.xpRange - distance) / 10;
                     orb.x += (dx / distance) * speed;
                     orb.y += (dy / distance) * speed;
+                    
+                    // 绘制吸取连线效果（只在近距离显示，减少性能消耗）
+                    if (distance > player.radius + orb.radius && distance < player.xpRange * 0.3) {
+                        ctx.strokeStyle = `rgba(0, 255, 128, ${0.3 * (1 - distance/player.xpRange)})`;
+                        ctx.lineWidth = 1;
+                        ctx.setLineDash([5, 3]);
+                        ctx.beginPath();
+                        ctx.moveTo(player.x, player.y);
+                        ctx.lineTo(orb.x, orb.y);
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+                    }
                 }
                 
                 // 绘制经验球
@@ -1054,11 +1757,13 @@
                 damageText.life--;
                 damageText.opacity = damageText.life / 60;
                 
-                // 绘制伤害数字
-                ctx.font = 'bold 18px Arial';
-                ctx.fillStyle = `rgba(255, 50, 50, ${damageText.opacity})`;
-                ctx.textAlign = 'center';
-                ctx.fillText(damageText.text, damageText.x, damageText.y);
+                // 绘制伤害数字（只显示最近的几个，减少性能消耗）
+                if (i >= damageTexts.length - 20) {
+                    ctx.font = 'bold 18px Arial';
+                    ctx.fillStyle = `rgba(255, 50, 50, ${damageText.opacity})`;
+                    ctx.textAlign = 'center';
+                    ctx.fillText(damageText.text, damageText.x, damageText.y);
+                }
                 
                 // 移除已经消失的伤害数字
                 if (damageText.life <= 0) {
@@ -1088,32 +1793,42 @@
                         // 造成伤害
                         enemy.hp -= player.damage;
                         
-                        // 显示伤害数字
-                        showDamageText(enemy.x, enemy.y - enemy.radius, player.damage);
+                        // 显示伤害数字（只显示一部分，减少性能消耗）
+                        if (Math.random() < 0.3) {
+                            showDamageText(enemy.x, enemy.y - enemy.radius, player.damage);
+                        }
                         
-                        // 绘制攻击效果
-                        ctx.strokeStyle = 'rgba(0, 212, 255, 0.7)';
-                        ctx.lineWidth = 3;
-                        ctx.beginPath();
-                        ctx.moveTo(player.x, player.y);
-                        ctx.lineTo(enemy.x, enemy.y);
-                        ctx.stroke();
+                        // 绘制攻击效果（只绘制最近的几个）
+                        if (i < 5) {
+                            ctx.strokeStyle = 'rgba(0, 212, 255, 0.7)';
+                            ctx.lineWidth = 3;
+                            ctx.beginPath();
+                            ctx.moveTo(player.x, player.y);
+                            ctx.lineTo(enemy.x, enemy.y);
+                            ctx.stroke();
+                        }
                     }
                 }
                 
                 player.lastAttackTime = currentTime;
             }
             
-            // 绘制攻击范围（视觉反馈）
-            ctx.strokeStyle = 'rgba(0, 212, 255, 0.2)';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.arc(player.x, player.y, player.attackRange, 0, Math.PI * 2);
-            ctx.stroke();
+            // 绘制攻击范围（视觉反馈）- 只在玩家停止移动时显示
+            if (gameTime % 2 < 0.1) {
+                ctx.strokeStyle = 'rgba(0, 212, 255, 0.1)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(player.x, player.y, player.attackRange, 0, Math.PI * 2);
+                ctx.stroke();
+            }
         }
         
         // 敌人攻击玩家
         function enemyAttack() {
+            // 计算总伤害，避免多个敌人同时攻击时的性能问题
+            let totalDamage = 0;
+            let attackingEnemies = 0;
+            
             for (let i = 0; i < enemies.length; i++) {
                 const enemy = enemies[i];
                 
@@ -1124,16 +1839,27 @@
                 
                 // 如果敌人接触到玩家
                 if (distance < player.radius + enemy.radius) {
-                    // 对玩家造成伤害
-                    player.hp -= enemy.damage / 60; // 每帧造成伤害
+                    totalDamage += enemy.damage;
+                    attackingEnemies++;
                     
-                    // 更新UI
-                    updateUI();
-                    
-                    // 检查玩家是否死亡
-                    if (player.hp <= 0) {
-                        gameOver();
+                    // 如果同时攻击的敌人太多，直接计算剩余生命值
+                    if (attackingEnemies > 20) {
+                        player.hp -= totalDamage * 2 / 60;
+                        break;
                     }
+                }
+            }
+            
+            // 应用总伤害
+            if (totalDamage > 0) {
+                player.hp -= totalDamage / 60;
+                
+                // 更新UI
+                updateUI();
+                
+                // 检查玩家是否死亡
+                if (player.hp <= 0) {
+                    gameOver();
                 }
             }
         }
@@ -1144,6 +1870,7 @@
             document.getElementById('hp').textContent = Math.ceil(player.hp);
             document.getElementById('xp').textContent = `${player.xp}/${player.xpToNextLevel}`;
             document.getElementById('gold').textContent = player.gold;
+            document.getElementById('xp-range-value').textContent = Math.round(player.xpRange);
             
             // 更新生命条
             const hpPercent = (player.hp / player.maxHp) * 100;
@@ -1183,6 +1910,7 @@
             cancelAnimationFrame(animationId);
             
             // 显示游戏结束消息
+            document.getElementById('final-time').textContent = Math.floor(gameTime);
             document.getElementById('final-level').textContent = player.level;
             document.getElementById('final-enemies').textContent = totalEnemiesKilled;
             document.getElementById('game-over-message').style.display = 'block';
@@ -1201,12 +1929,16 @@
                 damage: 10,
                 attackSpeed: 10,
                 attackRange: 100,
+                xpRange: 150,
                 lastAttackTime: 0,
                 level: 1,
                 xp: 0,
                 xpToNextLevel: 100,
                 gold: 50
             };
+            
+            // 根据难度重新设置玩家属性
+            applyDifficultyToPlayer();
             
             enemies = [];
             xpOrbs = [];
@@ -1234,7 +1966,7 @@
             player.y = canvas.height / 2;
             
             // 生成初始敌人
-            spawnEnemies(10);
+            spawnEnemies(getInitialEnemyCount());
             
             // 更新UI
             updateUI();
@@ -1243,8 +1975,74 @@
             gameLoop();
         }
         
+        // 更新当前难度显示
+        function updateCurrentDifficultyDisplay() {
+            const diff = difficultySettings[gameDifficulty];
+            const currentDifficultyElement = document.getElementById('current-difficulty');
+            
+            currentDifficultyElement.className = `current-difficulty ${gameDifficulty}`;
+            currentDifficultyElement.innerHTML = `<i class="fas fa-${gameDifficulty === 'easy' ? 'seedling' : gameDifficulty === 'medium' ? 'balance-scale' : 'skull-crossbones'}"></i>
+                                                 <span>${diff.name}难度</span>`;
+            currentDifficultyElement.style.borderColor = diff.color;
+            currentDifficultyElement.style.color = diff.color;
+        }
+        
+        // 切换到难度选择界面
+        function showDifficultySelection() {
+            // 暂停游戏
+            gameRunning = false;
+            cancelAnimationFrame(animationId);
+            
+            // 显示难度选择界面，隐藏游戏界面
+            document.getElementById('difficulty-selection').style.display = 'flex';
+            document.getElementById('game-container').style.display = 'none';
+            document.getElementById('game-over-message').style.display = 'none';
+        }
+        
+        // 初始化难度选择
+        function initDifficultySelection() {
+            const difficultyOptions = document.querySelectorAll('.difficulty-option');
+            const startGameBtn = document.getElementById('start-game-btn');
+            
+            // 设置默认选中中等难度
+            gameDifficulty = "medium";
+            
+            // 难度选择点击事件
+            difficultyOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    // 移除所有选项的选中状态
+                    difficultyOptions.forEach(opt => opt.classList.remove('selected'));
+                    
+                    // 添加当前选项的选中状态
+                    this.classList.add('selected');
+                    
+                    // 更新当前难度
+                    gameDifficulty = this.getAttribute('data-difficulty');
+                    
+                    // 启用开始游戏按钮
+                    startGameBtn.disabled = false;
+                });
+            });
+            
+            // 开始游戏按钮事件
+            startGameBtn.addEventListener('click', function() {
+                // 隐藏难度选择界面，显示游戏界面
+                document.getElementById('difficulty-selection').style.display = 'none';
+                document.getElementById('game-container').style.display = 'flex';
+                
+                // 初始化游戏
+                initGame();
+            });
+            
+            // 更改难度按钮事件
+            document.getElementById('difficulty-change-btn').addEventListener('click', showDifficultySelection);
+        }
+        
         // 初始化游戏
-        window.onload = initGame;
+        window.onload = function() {
+            // 首先初始化难度选择界面
+            initDifficultySelection();
+        };
     </script>
 </body>
 </html>
