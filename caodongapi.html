@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <title>草东没有派对随机歌词 API</title>
-  <meta http-equiv="Content-Type" content="application/javascript; charset=utf-8">
+  <!-- 关键修改1：将Content-Type改为JSON格式 -->
+  <meta http-equiv="Content-Type" content="application/json; charset=utf-8">
 </head>
 <body>
   <script>
@@ -18,21 +19,16 @@
         const randomIndex = Math.floor(Math.random() * lyricsList.length);
         const randomLyric = lyricsList[randomIndex];
 
-        // 3. 支持 JSONP 跨域调用（核心：获取回调函数名，返回函数调用）
-        const urlParams = new URLSearchParams(window.location.search);
-        const callback = urlParams.get('callback') || 'callback'; // 默认回调名
-        
-        // 输出 JSONP 格式（函数调用包裹 JSON）
-        document.body.textContent = `${callback}(${JSON.stringify(randomLyric)})`;
+        // 关键修改2：移除JSONP的callback逻辑，直接输出纯JSON字符串
+        document.body.textContent = JSON.stringify(randomLyric);
 
       } catch (error) {
-        // 错误处理
-        const callback = new URLSearchParams(window.location.search).get('callback') || 'callback';
-        document.body.textContent = `${callback}(${JSON.stringify({
+        // 错误处理：同样返回JSON格式的错误信息
+        document.body.textContent = JSON.stringify({
           error: true,
           message: error.message,
           data: null
-        })})`;
+        });
       }
     })();
   </script>
