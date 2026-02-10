@@ -2,28 +2,20 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <title>草东没有派对随机歌词 API</title>
-  <!-- 关键修改1：将Content-Type改为JSON格式 -->
+  <title>随机歌词 API</title>
   <meta http-equiv="Content-Type" content="application/json; charset=utf-8">
 </head>
 <body>
   <script>
     (async function() {
       try {
-        // 1. 读取歌词数据源
         const response = await fetch('./lyrics.json');
         if (!response.ok) throw new Error(`读取失败：${response.status}`);
         const lyricsList = await response.json();
-
-        // 2. 随机选一条歌词
         const randomIndex = Math.floor(Math.random() * lyricsList.length);
         const randomLyric = lyricsList[randomIndex];
-
-        // 关键修改2：移除JSONP的callback逻辑，直接输出纯JSON字符串
         document.body.textContent = JSON.stringify(randomLyric);
-
       } catch (error) {
-        // 错误处理：同样返回JSON格式的错误信息
         document.body.textContent = JSON.stringify({
           error: true,
           message: error.message,
