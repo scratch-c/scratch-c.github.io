@@ -30,21 +30,23 @@
         const randomIndex = Math.floor(Math.random() * lyricsList.length);
         const randomLyric = lyricsList[randomIndex];
         
-        // 构造标准JSON响应体
+        // 构造指定格式的JSON响应体（核心修改处）
         const result = JSON.stringify({
-          error: false,
-          message: 'success',
-          data: randomLyric
+          song: randomLyric.song || '',     // 歌曲名
+          lyric: randomLyric.lyric || '',   // 歌词内容
+          album: randomLyric.album || ''    // 专辑名
         }, null, 2); // 格式化JSON，便于阅读
         
         // 将JSON文本输出到页面（无任何HTML干扰）
         document.body.textContent = result;
       } catch (error) {
-        // 异常处理，返回错误JSON
+        // 异常处理，返回错误JSON（也按指定格式补充空值）
         const errorResult = JSON.stringify({
-          error: true,
-          message: error.message || '获取歌词失败',
-          data: null
+          song: '',
+          lyric: '',
+          album: '',
+          error: true, // 保留错误标识便于调试
+          message: error.message || '获取歌词失败'
         }, null, 2);
         document.body.textContent = errorResult;
       }
