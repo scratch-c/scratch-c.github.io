@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>随机歌词 API</title>
+  <!-- 关键：强制声明内容类型为JSON，编码为UTF-8 -->
+  <meta http-equiv="Content-Type" content="application/json; charset=utf-8">
+  <!-- 隐藏所有HTML默认样式，确保输出纯文本 -->
+  <style>
+    * { margin: 0; padding: 0; border: 0; }
+    body { font-family: monospace; white-space: pre; }
+  </style>
+</head>
+<body>
+  <script>
+    // 立即执行函数，处理核心逻辑
+    (async function() {
+      try {
+        // 读取同目录下的lyrics.json（需和此HTML文件放在同一文件夹）
+        const response = await fetch('./lyrics.json');
+        if (!response.ok) throw new Error(`HTTP错误：${response.status}`);
+        
+        // 解析JSON数据
+        const lyricsList = await response.json();
+        if (!Array.isArray(lyricsList) || lyricsList.length === 0) {
+          throw new Error('歌词列表为空或格式错误');
+        }
+        
+        // 随机选取一条歌词
+        const randomIndex = Math.floor(Math.random() * lyricsList.length);
+        const randomLyric = lyricsList[randomIndex];
+        
+        // 构造标准JSON响应体
+        const result = JSON.stringify({
+          error: false,
+          message: 'success',
+          data: randomLyric
+        }, null, 2); // 格式化JSON，便于阅读
+        
+        // 将JSON文本输出到页面（无任何HTML干扰）
+        document.body.textContent = result;
+      } catch (error) {
+        // 异常处理，返回错误JSON
+        const errorResult = JSON.stringify({
+          error: true,
+          message: error.message || '获取歌词失败',
+          data: null
+        }, null, 2);
+        document.body.textContent = errorResult;
+      }
+    })();
+  </script>
+</body>
+</html>
