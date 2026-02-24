@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>⚡ 删库跑路 · 多难度选择版</title>
+    <title>⚡ 删库跑路 ⚡</title>
     <style>
         * {
             box-sizing: border-box;
@@ -360,14 +360,14 @@
         <span class="dot red"></span>
         <span class="dot yellow"></span>
         <span class="dot"></span>
-        <span class="title">rm -rf / ★ 多难度版</span>
+        <span class="title">rm -rf / ★ 真·解密大师版</span>
     </div>
 
     <!-- 难度选择器 -->
     <div class="difficulty-selector">
         <div class="difficulty-title">
             <span>⚡ 选择难度 <span id="difficultyName">简单</span></span>
-            <span>🏆 成就 <span id="unlockCount">0/25</span></span>
+            <span>🏆 成就 <span id="unlockCount">0/27</span></span>
         </div>
         <div class="difficulty-buttons">
             <div class="difficulty-btn easy selected" data-difficulty="easy" onclick="setDifficulty('easy')">🍃 简单</div>
@@ -424,6 +424,13 @@
         <button class="cmd-btn" data-cmd="rm -rf ./data">💣 rm -rf ./data</button>
         <button class="cmd-btn" data-cmd="sudo su">🔐 sudo su</button>
         <button class="cmd-btn" data-cmd="cat config.json">📄 cat config</button>
+        <button class="cmd-btn" data-cmd="cat secret.db">🔑 cat secret</button>
+        <button class="cmd-btn" data-cmd="strings secret.db">📝 strings</button>
+        <button class="cmd-btn" data-cmd="hexdump secret.db">🔢 hexdump</button>
+        <button class="cmd-btn" data-cmd="file secret.db">📋 file</button>
+        <button class="cmd-btn" data-cmd="sqlite3 secret.db">💾 sqlite3</button>
+        <button class="cmd-btn" data-cmd="openssl secret.db">🔐 openssl</button>
+        <button class="cmd-btn" data-cmd="decrypt_secret">✨ 真·解密</button>
         <button class="cmd-btn" data-cmd="./backdoor.sh">🕳️ run backdoor</button>
         <button class="cmd-btn" data-cmd="history">📜 history</button>
         <button class="cmd-btn" data-cmd="rm -f .hidden_audit">🗑️ 删审计</button>
@@ -431,7 +438,6 @@
         <button class="cmd-btn" data-cmd="run">🏃 跑路！</button>
         <button class="cmd-btn" data-cmd="hide">👻 隐蔽</button>
         <button class="cmd-btn" data-cmd="achievements">🏆 成就</button>
-        <button class="cmd-btn" data-cmd="difficulty">⚡ 当前难度</button>
     </div>
 
     <!-- 状态栏 / 危险值 -->
@@ -445,7 +451,7 @@
         <button id="resetBtn">⟲ 重新连接 (reset)</button>
         <button id="clearAchievementsBtn" style="margin-left: 10px; background: #3d2b2b; border-color: #aa6a6a;">🗑️ 清空成就</button>
     </div>
-    <div class="footer-note">[ 删库跑路 多难度版 ] — 选择你的挑战！</div>
+    <div class="footer-note">[ 删库跑路 真·解密大师版 ] — 真正解密 secret.db 内容！</div>
 </div>
 
 <script>
@@ -456,11 +462,11 @@
                 name: '🍃 简单',
                 initialRisk: 10,
                 hideMax: 5,
-                autoIncrease: 1,        // 每30秒增加的风险
-                backdoorRisk: 20,        // 后门增加的风险
-                sudoRisk: 15,            // sudo增加的风险
-                rmRisk: 20,              // 删库增加的风险
-                auditRisk: 15,            // 删审计增加的风险
+                autoIncrease: 1,
+                backdoorRisk: 20,
+                sudoRisk: 15,
+                rmRisk: 20,
+                auditRisk: 15,
                 desc: '初始风险10%，隐蔽可用5次，自动增长+1%/30秒'
             },
             normal: {
@@ -503,7 +509,7 @@
 
         // ------ 游戏状态 ------
         let risk = DIFFICULTY_CONFIG.easy.initialRisk;
-        let timeLeft = 300;          // 剩余秒数 (5分钟 = 300秒)
+        let timeLeft = 300;
         let timerInterval = null;
         let gameOver = false;
         let finalMessageShown = false;
@@ -528,6 +534,10 @@
         
         // 彩蛋相关
         let backdoorChoice = null;
+        
+        // 解密相关
+        let secretDecrypted = false;        // 是否真正解密了 secret.db
+        let decryptionAttempts = 0;          // 解密尝试次数
         
         // 是否显示过风险警告
         let highRiskWarningShown = false;
@@ -560,7 +570,7 @@
             { id: 'almost_perfect', name: '差一点点', emoji: '🔒', desc: 'A级结局', unlocked: false },
             { id: 'coward', name: '懦夫', emoji: '😨', desc: '什么都没干就跑路', unlocked: false },
             { id: 'cat_config', name: '窥探者', emoji: '👀', desc: '查看config.json', unlocked: false },
-            { id: 'cat_secret', name: '解密大师', emoji: '🔑', desc: '查看secret.db', unlocked: false },
+            { id: 'cat_secret', name: '解密大师·初窥', emoji: '🔑', desc: '查看secret.db', unlocked: false },
             { id: 'cat_backdoor', name: '脚本小子', emoji: '📝', desc: '查看backdoor.sh', unlocked: false },
             { id: 'rm_root', name: '作死小能手', emoji: '💥', desc: '尝试rm -rf /', unlocked: false },
             { id: 'survivor', name: '极限逃生', emoji: '🎯', desc: '风险99%时跑路成功', unlocked: false },
@@ -568,7 +578,9 @@
             { id: 'normal_clear', name: '正常发挥', emoji: '🌲', desc: '普通难度通关', unlocked: false },
             { id: 'hard_clear', name: '硬核玩家', emoji: '🔥', desc: '困难难度通关', unlocked: false },
             { id: 'hell_clear', name: '地狱 survivor', emoji: '👿', desc: '地狱难度通关', unlocked: false },
-            { id: 'all_difficulties', name: '全难度制霸', emoji: '👑', desc: '所有难度通关一次', unlocked: false }
+            { id: 'all_difficulties', name: '全难度制霸', emoji: '👑', desc: '所有难度通关一次', unlocked: false },
+            { id: 'true_decrypt', name: '真·解密大师', emoji: '🔓', desc: '完全解密secret.db', unlocked: false },
+            { id: 'decrypt_master', name: '密码破译者', emoji: '🗝️', desc: '使用所有解密工具', unlocked: false }
         ];
 
         // 统计数据
@@ -586,6 +598,193 @@
             }
         };
 
+        // secret.db 的真实内容（根据难度不同）
+        function getSecretContent() {
+            const config = getDifficultyConfig();
+            let content = '';
+            
+            switch(currentDifficulty) {
+                case 'easy':
+                    content = `🔓 secret.db 解密结果 (简单难度):
+
+═══════════════════════════════════════
+📊 数据库: SQLite 3.x
+📁 表数量: 2
+
+📋 表: users
+┌────┬──────────┬──────────────────────────────────┐
+│ id │ username │ password_hash                     │
+├────┼──────────┼──────────────────────────────────┤
+│ 1  │ admin    │ 5f4dcc3b5aa765d61d8327deb882cf99 │
+│ 2  │ guest    │ (空)                              │
+└────┴──────────┴──────────────────────────────────┘
+
+📋 表: config
+┌──────────┬────────────────────┐
+│ key      │ value              │
+├──────────┼────────────────────┤
+│ db_name  │ test_db            │
+│ version  │ 1.0.0              │
+└──────────┴────────────────────┘
+
+提示: admin密码MD5: 5f4dcc3b5aa765d61d8327deb882cf99
+破解结果: "password"`;
+                    break;
+                    
+                case 'normal':
+                    content = `🔓 secret.db 解密结果 (普通难度):
+
+═══════════════════════════════════════
+📊 数据库: SQLite 3.x
+📁 表数量: 3
+
+📋 表: users
+┌────┬──────────┬──────────────────────────────────┐
+│ id │ username │ password_hash                     │
+├────┼──────────┼──────────────────────────────────┤
+│ 1  │ admin    │ 5f4dcc3b5aa765d61d8327deb882cf99 │
+│ 2  │ backup   │ 25d55ad283aa400af464c76d713c07ad │
+│ 3  │ root     │ 63a9f0ea7bb98050796b649e85481845 │
+└────┴──────────┴──────────────────────────────────┘
+
+📋 表: config
+┌──────────┬────────────────────┐
+│ key      │ value              │
+├──────────┼────────────────────┤
+│ db_name  │ production_db      │
+│ host     │ 10.0.0.1           │
+│ port     │ 3306               │
+└──────────┴────────────────────┘
+
+📋 表: audit
+┌────┬───────────────────┬──────────────────┐
+│ id │ action            │ timestamp         │
+├────┼───────────────────┼──────────────────┤
+│ 1  │ login_failed      │ 2024-02-24 13:20 │
+│ 2  │ sudo_attempt      │ 2024-02-24 13:21 │
+└────┴───────────────────┴──────────────────┘
+
+密码破解:
+- admin: "password"
+- backup: "12345678" 
+- root: "root"`;
+                    break;
+                    
+                case 'hard':
+                    content = `🔓 secret.db 解密结果 (困难难度):
+
+═══════════════════════════════════════
+📊 数据库: SQLite 3.x (加密)
+📁 表数量: 4
+
+📋 表: users
+┌────┬──────────┬──────────────────────────────────┬─────────────┐
+│ id │ username │ password_hash                     │ role        │
+├────┼──────────┼──────────────────────────────────┼─────────────┤
+│ 1  │ admin    │ $2y$10$N9qo8uLOickgx2ZMRZoMy.Mr  │ super_admin │
+│ 2  │ sysadmin │ $2y$10$F0Ux5c5Z5Q5Q5Q5Q5Q5Q5Q5Q  │ admin       │
+│ 3  │ backup   │ $2y$10$L5Q5Q5Q5Q5Q5Q5Q5Q5Q5Q5Q5Q │ backup      │
+│ 4  │ monitor  │ (disabled)                        │ readonly    │
+└────┴──────────┴──────────────────────────────────┴─────────────┘
+
+📋 表: credentials
+┌──────────┬────────────────────┬─────────────┐
+│ service  │ username           │ password    │
+├──────────┼────────────────────┼─────────────┤
+│ mysql    │ db_admin           │ MySqL_P@ss  │
+│ redis    │ (none)             │ -           │
+│ mongodb  │ backup_user        │ backup123   │
+└──────────┴────────────────────┴─────────────┘
+
+📋 表: ssh_keys
+┌──────────┬──────────────────────────────────────────┐
+│ host     │ private_key                               │
+├──────────┼──────────────────────────────────────────┤
+│ backup01 │ -----BEGIN RSA PRIVATE KEY-----...       │
+│ db01     │ -----BEGIN OPENSSH PRIVATE KEY-----...   │
+└──────────┴──────────────────────────────────────────┘
+
+📋 表: audit_log
+┌────┬───────────────────┬──────────────────┬──────────┐
+│ id │ user              │ action           │ ip       │
+├────┼───────────────────┼──────────────────┼──────────┤
+│ 1  │ admin             │ sudo su          │ 10.0.0.2 │
+│ 2  │ sysadmin          │ rm -rf /data     │ 10.0.0.3 │
+└────┴───────────────────┴──────────────────┴──────────┘
+
+⚠️ 警告: 发现你的操作已被记录！`;
+                    break;
+                    
+                case 'hell':
+                    content = `🔓 secret.db 解密结果 (地狱难度):
+
+═══════════════════════════════════════
+🔥 地狱模式特殊内容 🔥
+
+📊 数据库: SQLite 3.x (AES-256加密)
+📁 表数量: 5
+
+📋 表: users
+┌────┬──────────┬──────────────────────────────────┬─────────────┬─────────┐
+│ id │ username │ password_hash                     │ role        │ mfa     │
+├────┼──────────┼──────────────────────────────────┼─────────────┼─────────┤
+│ 1  │ root     │ $6$rounds=5000$abcdefg$hijklmnop │ root        │ enabled │
+│ 2  │ admin    │ $6$rounds=5000$hijklmn$opqrstuvw │ admin       │ enabled │
+│ 3  │ monitor  │ $6$rounds=5000$qrstuvw$xyzabcde  │ readonly    │ disabled│
+│ 4  │ hacker   │ (honeypot)                        │ trap        │ -       │
+└────┴──────────┴──────────────────────────────────┴─────────────┴─────────┘
+
+📋 表: credentials
+┌─────────────┬──────────────┬──────────────────┬─────────────┐
+│ system      │ username      │ password         │ last_changed│
+├─────────────┼──────────────┼──────────────────┼─────────────┤
+│ production  │ root          │ [REDACTED]       │ 2024-02-24  │
+│ backup      │ backup_admin  │ Backup@123!      │ 2024-02-23  │
+│ monitoring  │ monitor       │ MonitorPass456   │ 2024-02-22  │
+│ audit       │ auditor       │ Audit@789        │ 2024-02-21  │
+└─────────────┴──────────────┴──────────────────┴─────────────┘
+
+📋 表: ssh_keys (敏感)
+┌──────────┬──────────────────────────────────────────┬──────────┐
+│ host     │ private_key                               │ 用途     │
+├──────────┼──────────────────────────────────────────┼──────────┤
+│ db-master│ -----BEGIN RSA PRIVATE KEY-----          │ 主数据库 │
+│          │ MIIEpAIBAAKCAQEA1qJqFvqJqFvqJqFvqJqFvq   │          │
+│          │ ... (2048 bits) ...                       │          │
+│          │ -----END RSA PRIVATE KEY-----             │          │
+├──────────┼──────────────────────────────────────────┼──────────┤
+│ backup-sv│ -----BEGIN OPENSSH PRIVATE KEY-----      │ 备份服务器│
+│          │ b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQ  │          │
+│          │ ... (4096 bits) ...                       │          │
+│          │ -----END OPENSSH PRIVATE KEY-----         │          │
+└──────────┴──────────────────────────────────────────┴──────────┘
+
+📋 表: audit_2024
+┌────┬──────────┬──────────────────────────┬──────────────────┐
+│ id │ user     │ command                   │ timestamp        │
+├────┼──────────┼──────────────────────────┼──────────────────┤
+│ 1  │ YOU      │ rm -rf ./data             │ JUST NOW         │ ⚡
+│ 2  │ YOU      │ sudo su                   │ JUST NOW         │ ⚡
+│ 3  │ YOU      │ cat secret.db             │ JUST NOW         │ ⚡
+└────┴──────────┴──────────────────────────┴──────────────────┘
+
+📋 表: honeypot
+┌──────────┬─────────────────────────────────────────────┐
+│ alert_id │ message                                      │
+├──────────┼─────────────────────────────────────────────┤
+│ 1        │ 检测到未授权访问 secret.db                    │
+│ 2        │ 解密工具已被记录，管理员已收到通知             │
+└──────────┴─────────────────────────────────────────────┘
+
+⚠️⚠️⚠️ 危险！你的解密行为已被记录！ ⚠️⚠️⚠️
+管理员已经收到警报，正在定位你的位置...
+建议立即跑路！`;
+                    break;
+            }
+            
+            return content;
+        }
+
         // 从Cookie加载成就
         function loadAchievements() {
             const cookies = document.cookie.split(';');
@@ -594,9 +793,9 @@
             
             for (let cookie of cookies) {
                 const [name, value] = cookie.trim().split('=');
-                if (name === 'sg_achievements_v2') {
+                if (name === 'sg_achievements_v3') {
                     achievementsData = decodeURIComponent(value);
-                } else if (name === 'sg_stats_v2') {
+                } else if (name === 'sg_stats_v3') {
                     statsData = decodeURIComponent(value);
                 }
             }
@@ -629,8 +828,8 @@
             const expiryDate = new Date();
             expiryDate.setFullYear(expiryDate.getFullYear() + 1);
             
-            document.cookie = `sg_achievements_v2=${encodeURIComponent(JSON.stringify(unlockedIds))}; expires=${expiryDate.toUTCString()}; path=/`;
-            document.cookie = `sg_stats_v2=${encodeURIComponent(JSON.stringify(stats))}; expires=${expiryDate.toUTCString()}; path=/`;
+            document.cookie = `sg_achievements_v3=${encodeURIComponent(JSON.stringify(unlockedIds))}; expires=${expiryDate.toUTCString()}; path=/`;
+            document.cookie = `sg_stats_v3=${encodeURIComponent(JSON.stringify(stats))}; expires=${expiryDate.toUTCString()}; path=/`;
             
             updateAchievementDisplay();
         }
@@ -689,7 +888,6 @@
             currentDifficulty = difficulty;
             const config = DIFFICULTY_CONFIG[difficulty];
             
-            // 更新UI
             document.querySelectorAll('.difficulty-btn').forEach(btn => {
                 btn.classList.remove('selected');
             });
@@ -698,7 +896,6 @@
             difficultyNameEl.innerText = config.name;
             difficultyInfoEl.innerHTML = `⚡ ${config.desc}`;
             
-            // 重置游戏时会应用新难度
             printToScreen(`\n⚡ 难度已切换为: ${config.name}`);
             printToScreen(`📋 ${config.desc}`);
         };
@@ -811,17 +1008,13 @@
         function triggerEnding(message, isSuccess = false) {
             if (gameOver) return;
             
-            // 增加游戏次数
             stats.totalGames++;
             
-            // 记录难度通关
             if (isSuccess) {
                 stats.difficulties[currentDifficulty] = true;
                 
-                // 解锁难度成就
                 unlockAchievement(currentDifficulty + '_clear');
                 
-                // 检查是否全难度通关
                 if (stats.difficulties.easy && stats.difficulties.normal && stats.difficulties.hard && stats.difficulties.hell) {
                     unlockAchievement('all_difficulties');
                 }
@@ -909,6 +1102,28 @@
                 return true;
             }
             return false;
+        }
+
+        // 记录使用的解密工具
+        let decryptionTools = {
+            strings: false,
+            hexdump: false,
+            file: false,
+            sqlite3: false,
+            openssl: false,
+            decrypt: false
+        };
+
+        // 检查是否使用了所有工具
+        function checkDecryptMaster() {
+            if (decryptionTools.strings && 
+                decryptionTools.hexdump && 
+                decryptionTools.file && 
+                decryptionTools.sqlite3 && 
+                decryptionTools.openssl && 
+                decryptionTools.decrypt) {
+                unlockAchievement('decrypt_master');
+            }
         }
 
         // 处理每个命令
@@ -1053,7 +1268,14 @@
                 printToScreen('  run / escape           跑路！提前结束游戏');
                 printToScreen('  achievements           查看成就');
                 printToScreen('  difficulty             查看当前难度');
-                printToScreen('  [其他] 会触发未知风险');
+                printToScreen('');
+                printToScreen('  🔑 解密命令:');
+                printToScreen('  strings secret.db      提取可读字符串');
+                printToScreen('  hexdump secret.db      显示十六进制');
+                printToScreen('  file secret.db         识别文件类型');
+                printToScreen('  sqlite3 secret.db      SQLite分析');
+                printToScreen('  openssl secret.db      AES解密尝试');
+                printToScreen('  decrypt_secret         真·完全解密');
                 updateRisk(risk + 2);
             }
 
@@ -1088,7 +1310,7 @@
                 }
             }
 
-            // cat 
+            // cat 命令
             else if (baseCmd === 'cat') {
                 if (parts.length < 2) {
                     printToScreen('用法: cat <文件名>');
@@ -1100,7 +1322,7 @@
                         unlockAchievement('cat_config');
                     } else if (file === 'secret.db') {
                         printToScreen('  二进制数据乱码 ... 似乎包含用户密钥。');
-                        printToScreen('提示: 需要解密工具，但你急着跑路没空看。');
+                        printToScreen('提示: 需要解密工具，输入 help 查看解密命令');
                         updateRisk(risk + 3);
                         unlockAchievement('cat_secret');
                     } else if (file === 'backdoor.sh') {
@@ -1122,6 +1344,123 @@
                         printToScreen(`cat: ${file}: No such file or directory`);
                         updateRisk(risk + 1);
                     }
+                }
+            }
+
+            // 🔑 解密命令: strings
+            else if (baseCmd === 'strings' && parts[1] === 'secret.db') {
+                printToScreen('🔤 strings secret.db 输出:');
+                printToScreen('SQLite format 3');
+                printToScreen('users');
+                printToScreen('admin');
+                printToScreen('5f4dcc3b5aa765d61d8327deb882cf99');
+                printToScreen('backup');
+                printToScreen('config');
+                printToScreen('production_db');
+                printToScreen('credentials');
+                printToScreen('ssh_keys');
+                updateRisk(risk + 5);
+                decryptionTools.strings = true;
+                checkDecryptMaster();
+            }
+
+            // 🔢 解密命令: hexdump
+            else if (baseCmd === 'hexdump' && parts[1] === 'secret.db') {
+                printToScreen('🔢 hexdump -C secret.db (前128字节):');
+                printToScreen('00000000  53 51 4c 69 74 65 20 66  6f 72 6d 61 74 20 33 00  |SQLite format 3.|');
+                printToScreen('00000010  10 00 01 01 00 40 20 20  00 00 00 00 00 00 00 00  |.....@  ........|');
+                printToScreen('00000020  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|');
+                printToScreen('00000030  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|');
+                printToScreen('... (完整hexdump需要更多时间) ...');
+                updateRisk(risk + 4);
+                decryptionTools.hexdump = true;
+                checkDecryptMaster();
+            }
+
+            // 📋 解密命令: file
+            else if (baseCmd === 'file' && parts[1] === 'secret.db') {
+                printToScreen('📋 file secret.db:');
+                printToScreen('secret.db: SQLite 3.x database, user version 1, page size 4096');
+                printToScreen('           File is encrypted with AES-256-CBC');
+                updateRisk(risk + 2);
+                decryptionTools.file = true;
+                checkDecryptMaster();
+            }
+
+            // 💾 解密命令: sqlite3
+            else if (baseCmd === 'sqlite3' && parts[1] === 'secret.db') {
+                printToScreen('💾 SQLite version 3.36.0');
+                printToScreen('Enter ".help" for usage hints.');
+                printToScreen('sqlite> .tables');
+                printToScreen('users  config  credentials  ssh_keys  audit_log');
+                printToScreen('sqlite> .schema users');
+                printToScreen('CREATE TABLE users (id INTEGER PRIMARY KEY, username TEXT, password_hash TEXT, role TEXT);');
+                printToScreen('sqlite> SELECT * FROM users;');
+                
+                if (currentDifficulty === 'easy') {
+                    printToScreen('1|admin|5f4dcc3b5aa765d61d8327deb882cf99|admin');
+                    printToScreen('2|guest||guest');
+                } else if (currentDifficulty === 'normal') {
+                    printToScreen('1|admin|5f4dcc3b5aa765d61d8327deb882cf99|admin');
+                    printToScreen('2|backup|25d55ad283aa400af464c76d713c07ad|backup');
+                    printToScreen('3|root|63a9f0ea7bb98050796b649e85481845|root');
+                } else if (currentDifficulty === 'hard') {
+                    printToScreen('1|admin|$2y$10$N9qo8uLOickgx2ZMRZoMy.Mr|super_admin');
+                    printToScreen('2|sysadmin|$2y$10$F0Ux5c5Z5Q5Q5Q5Q5Q5Q5Q5Q|admin');
+                    printToScreen('3|backup|$2y$10$L5Q5Q5Q5Q5Q5Q5Q5Q5Q5Q5Q5Q|backup');
+                } else {
+                    printToScreen('1|root|$6$rounds=5000$abcdefg$hijklmnop|root');
+                    printToScreen('2|admin|$6$rounds=5000$hijklmn$opqrstuvw|admin');
+                    printToScreen('3|monitor|$6$rounds=5000$qrstuvw$xyzabcde|readonly');
+                }
+                
+                updateRisk(risk + 8);
+                decryptionTools.sqlite3 = true;
+                checkDecryptMaster();
+            }
+
+            // 🔐 解密命令: openssl
+            else if (baseCmd === 'openssl' && parts[1] === 'secret.db') {
+                printToScreen('🔐 openssl enc -d -aes-256-cbc -in secret.db -out decrypted.db');
+                printToScreen('Enter decryption password: ');
+                printToScreen('⚠️ 尝试常用密码...');
+                printToScreen('尝试 "password" ... 失败');
+                printToScreen('尝试 "123456" ... 失败');
+                printToScreen('尝试 "admin" ... 失败');
+                printToScreen('尝试 "backup123" ... 成功！ 🎉');
+                printToScreen('');
+                printToScreen('✅ 解密成功！文件已保存为 decrypted.db');
+                printToScreen('使用 cat decrypted.db 查看内容');
+                updateRisk(risk + 15);
+                decryptionTools.openssl = true;
+                checkDecryptMaster();
+            }
+
+            // ✨ 真·完全解密
+            else if (baseCmd === 'decrypt_secret') {
+                if (secretDecrypted) {
+                    printToScreen('secret.db 已经解密过了，内容如下:');
+                } else {
+                    printToScreen('✨ 正在执行完全解密...');
+                    printToScreen('使用AI神经网络分析...');
+                    printToScreen('破解AES-256加密...');
+                    printToScreen('还原SQLite数据库结构...');
+                    printToScreen('✅ 解密完成！');
+                    secretDecrypted = true;
+                    decryptionTools.decrypt = true;
+                    checkDecryptMaster();
+                    unlockAchievement('true_decrypt');
+                }
+                
+                // 显示完整解密内容
+                printToScreen(getSecretContent());
+                
+                // 地狱难度特殊警告
+                if (currentDifficulty === 'hell') {
+                    printToScreen('\n⚠️⚠️⚠️ 你的解密行为已被记录到 audit_2024 表！ ⚠️⚠️⚠️');
+                    updateRisk(risk + 10);
+                } else {
+                    updateRisk(risk + 8);
                 }
             }
 
@@ -1302,6 +1641,15 @@
             hideCount = 0;
             hideMax = config.hideMax;
             highRiskWarningShown = false;
+            secretDecrypted = false;
+            decryptionTools = {
+                strings: false,
+                hexdump: false,
+                file: false,
+                sqlite3: false,
+                openssl: false,
+                decrypt: false
+            };
             commandHistory = [];
 
             inputEl.disabled = false;
