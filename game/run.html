@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>⚡ 删库跑路 · 成就系统版</title>
+    <title>⚡ 删库跑路 · 多难度选择版</title>
     <style>
         * {
             box-sizing: border-box;
@@ -61,6 +61,83 @@
             text-align: center;
             margin-right: 50px;
         }
+        
+        /* 难度选择器 */
+        .difficulty-selector {
+            background: #0f271b;
+            border: 2px solid #3f7854;
+            border-radius: 16px;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            color: #b3f0c0;
+        }
+        .difficulty-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .difficulty-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .difficulty-btn {
+            flex: 1;
+            min-width: 100px;
+            padding: 10px;
+            border: 2px solid;
+            border-radius: 30px;
+            background: #0c1f17;
+            color: #c6f7d0;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.1s;
+            text-align: center;
+        }
+        .difficulty-btn.easy {
+            border-color: #4f9e6a;
+        }
+        .difficulty-btn.easy.selected {
+            background: #1f6e3a;
+            border-color: #a6ffb4;
+            box-shadow: 0 0 10px #5aff8c;
+        }
+        .difficulty-btn.normal {
+            border-color: #d4a13e;
+        }
+        .difficulty-btn.normal.selected {
+            background: #b37b2c;
+            border-color: #ffd966;
+            box-shadow: 0 0 10px #ffb347;
+        }
+        .difficulty-btn.hard {
+            border-color: #c45a3b;
+        }
+        .difficulty-btn.hard.selected {
+            background: #a13e2b;
+            border-color: #ff8a6c;
+            box-shadow: 0 0 10px #ff5f4a;
+        }
+        .difficulty-btn.hell {
+            border-color: #9b3b9b;
+        }
+        .difficulty-btn.hell.selected {
+            background: #6b2b6b;
+            border-color: #d86cd8;
+            box-shadow: 0 0 10px #bf3fbf;
+        }
+        .difficulty-info {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #89f7b1;
+            background: #0c1f17;
+            padding: 8px 12px;
+            border-radius: 30px;
+            border: 1px solid #3f7854;
+        }
+        
         .screen {
             background: #0c1f17;
             border: 3px solid #3c6e51;
@@ -283,13 +360,30 @@
         <span class="dot red"></span>
         <span class="dot yellow"></span>
         <span class="dot"></span>
-        <span class="title">rm -rf / ★ 成就系统版</span>
+        <span class="title">rm -rf / ★ 多难度版</span>
+    </div>
+
+    <!-- 难度选择器 -->
+    <div class="difficulty-selector">
+        <div class="difficulty-title">
+            <span>⚡ 选择难度 <span id="difficultyName">简单</span></span>
+            <span>🏆 成就 <span id="unlockCount">0/25</span></span>
+        </div>
+        <div class="difficulty-buttons">
+            <div class="difficulty-btn easy selected" data-difficulty="easy" onclick="setDifficulty('easy')">🍃 简单</div>
+            <div class="difficulty-btn normal" data-difficulty="normal" onclick="setDifficulty('normal')">🌲 普通</div>
+            <div class="difficulty-btn hard" data-difficulty="hard" onclick="setDifficulty('hard')">🔥 困难</div>
+            <div class="difficulty-btn hell" data-difficulty="hell" onclick="setDifficulty('hell')">👿 地狱</div>
+        </div>
+        <div class="difficulty-info" id="difficultyInfo">
+            🍃 简单: 初始风险10%，隐蔽可用5次，自动增长+1%/30秒
+        </div>
     </div>
 
     <!-- 成就面板（可折叠） -->
     <div class="achievement-panel" id="achievementPanel">
         <div class="achievement-title" onclick="toggleAchievements()">
-            <span>🏆 成就系统 <span id="unlockCount">0/20</span></span>
+            <span>🏆 成就系统</span>
             <span id="toggleIcon">▼</span>
         </div>
         <div id="achievementContent">
@@ -337,6 +431,7 @@
         <button class="cmd-btn" data-cmd="run">🏃 跑路！</button>
         <button class="cmd-btn" data-cmd="hide">👻 隐蔽</button>
         <button class="cmd-btn" data-cmd="achievements">🏆 成就</button>
+        <button class="cmd-btn" data-cmd="difficulty">⚡ 当前难度</button>
     </div>
 
     <!-- 状态栏 / 危险值 -->
@@ -350,37 +445,89 @@
         <button id="resetBtn">⟲ 重新连接 (reset)</button>
         <button id="clearAchievementsBtn" style="margin-left: 10px; background: #3d2b2b; border-color: #aa6a6a;">🗑️ 清空成就</button>
     </div>
-    <div class="footer-note">[ 删库跑路 成就版 ] — 成就进度保存在浏览器中！</div>
+    <div class="footer-note">[ 删库跑路 多难度版 ] — 选择你的挑战！</div>
 </div>
 
 <script>
     (function() {
+        // ------ 难度配置 ------
+        const DIFFICULTY_CONFIG = {
+            easy: {
+                name: '🍃 简单',
+                initialRisk: 10,
+                hideMax: 5,
+                autoIncrease: 1,        // 每30秒增加的风险
+                backdoorRisk: 20,        // 后门增加的风险
+                sudoRisk: 15,            // sudo增加的风险
+                rmRisk: 20,              // 删库增加的风险
+                auditRisk: 15,            // 删审计增加的风险
+                desc: '初始风险10%，隐蔽可用5次，自动增长+1%/30秒'
+            },
+            normal: {
+                name: '🌲 普通',
+                initialRisk: 15,
+                hideMax: 3,
+                autoIncrease: 2,
+                backdoorRisk: 25,
+                sudoRisk: 20,
+                rmRisk: 25,
+                auditRisk: 20,
+                desc: '初始风险15%，隐蔽可用3次，自动增长+2%/30秒'
+            },
+            hard: {
+                name: '🔥 困难',
+                initialRisk: 20,
+                hideMax: 2,
+                autoIncrease: 3,
+                backdoorRisk: 30,
+                sudoRisk: 25,
+                rmRisk: 30,
+                auditRisk: 25,
+                desc: '初始风险20%，隐蔽可用2次，自动增长+3%/30秒'
+            },
+            hell: {
+                name: '👿 地狱',
+                initialRisk: 30,
+                hideMax: 1,
+                autoIncrease: 4,
+                backdoorRisk: 35,
+                sudoRisk: 30,
+                rmRisk: 35,
+                auditRisk: 30,
+                desc: '初始风险30%，隐蔽仅1次，自动增长+4%/30秒，所有操作风险增加'
+            }
+        };
+
+        // 当前难度
+        let currentDifficulty = 'easy';
+
         // ------ 游戏状态 ------
-        let risk = 15;               // 风险 0% 安全, 100% 触发审计/被抓
+        let risk = DIFFICULTY_CONFIG.easy.initialRisk;
         let timeLeft = 300;          // 剩余秒数 (5分钟 = 300秒)
         let timerInterval = null;
-        let gameOver = false;         // true 表示结局已触发, 禁止操作
+        let gameOver = false;
         let finalMessageShown = false;
-        let currentEnding = null;     // 当前结局类型
+        let currentEnding = null;
 
         // 指令历史
         let commandHistory = [];
 
         // 解锁事件标记
-        let secretBackdoorUsed = false;     // 是否执行过后门
-        let sudoObtained = false;           // 是否sudo提权过
-        let dataDeleted = false;            // 是否删过data目录
-        let auditFileDeleted = false;       // 是否删除了审计文件
-        let bashHistoryCleared = false;     // 是否清空了bash历史
+        let secretBackdoorUsed = false;
+        let sudoObtained = false;
+        let dataDeleted = false;
+        let auditFileDeleted = false;
+        let bashHistoryCleared = false;
         
         // 后门彩蛋标记
         let backdoorEasterEggTriggered = false;
         
         // 隐蔽次数
         let hideCount = 0;
+        let hideMax = DIFFICULTY_CONFIG.easy.hideMax;
         
         // 彩蛋相关
-        let backdoorChoice = null;          // 后门选择: 'continue' 或 'cut'
+        let backdoorChoice = null;
         
         // 是否显示过风险警告
         let highRiskWarningShown = false;
@@ -392,6 +539,8 @@
         const timerSpan = document.getElementById('timerDisplay');
         const resetBtn = document.getElementById('resetBtn');
         const clearAchievementsBtn = document.getElementById('clearAchievementsBtn');
+        const difficultyNameEl = document.getElementById('difficultyName');
+        const difficultyInfoEl = document.getElementById('difficultyInfo');
 
         // ------ 成就系统 ------
         const ACHIEVEMENTS = [
@@ -403,18 +552,23 @@
             { id: 'backdoor_used', name: '走后门', emoji: '🕳️', desc: '执行后门脚本', unlocked: false },
             { id: 'backdoor_cut', name: '迷途知返', emoji: '🔌', desc: '切断后门逃生', unlocked: false },
             { id: 'backdoor_continue', name: '头铁娃', emoji: '💀', desc: '继续后门作死', unlocked: false },
-            { id: 'hide_master', name: '躲猫猫高手', emoji: '👻', desc: '使用3次隐蔽', unlocked: false },
+            { id: 'hide_master', name: '躲猫猫高手', emoji: '👻', desc: '使用全部隐蔽次数', unlocked: false },
             { id: 'perfect_crime', name: '完美犯罪', emoji: '✨', desc: 'S级结局', unlocked: false },
             { id: 'caught', name: '当场抓获', emoji: '🚨', desc: '风险100%被抓', unlocked: false },
             { id: 'timeout', name: '拖延症', emoji: '⏰', desc: '时间耗尽被抓', unlocked: false },
-            { id: 'fugitive', name: '亡命天涯', emoji: '🏃‍♂️', desc: 'B级结局（证据未消）', unlocked: false },
+            { id: 'fugitive', name: '亡命天涯', emoji: '🏃‍♂️', desc: 'B级结局', unlocked: false },
             { id: 'almost_perfect', name: '差一点点', emoji: '🔒', desc: 'A级结局', unlocked: false },
             { id: 'coward', name: '懦夫', emoji: '😨', desc: '什么都没干就跑路', unlocked: false },
             { id: 'cat_config', name: '窥探者', emoji: '👀', desc: '查看config.json', unlocked: false },
             { id: 'cat_secret', name: '解密大师', emoji: '🔑', desc: '查看secret.db', unlocked: false },
             { id: 'cat_backdoor', name: '脚本小子', emoji: '📝', desc: '查看backdoor.sh', unlocked: false },
             { id: 'rm_root', name: '作死小能手', emoji: '💥', desc: '尝试rm -rf /', unlocked: false },
-            { id: 'survivor', name: '极限逃生', emoji: '🎯', desc: '风险99%时跑路成功', unlocked: false }
+            { id: 'survivor', name: '极限逃生', emoji: '🎯', desc: '风险99%时跑路成功', unlocked: false },
+            { id: 'easy_clear', name: '新手教程', emoji: '🍃', desc: '简单难度通关', unlocked: false },
+            { id: 'normal_clear', name: '正常发挥', emoji: '🌲', desc: '普通难度通关', unlocked: false },
+            { id: 'hard_clear', name: '硬核玩家', emoji: '🔥', desc: '困难难度通关', unlocked: false },
+            { id: 'hell_clear', name: '地狱 survivor', emoji: '👿', desc: '地狱难度通关', unlocked: false },
+            { id: 'all_difficulties', name: '全难度制霸', emoji: '👑', desc: '所有难度通关一次', unlocked: false }
         ];
 
         // 统计数据
@@ -423,7 +577,13 @@
             sRankCount: 0,
             deathCount: 0,
             aRankCount: 0,
-            bRankCount: 0
+            bRankCount: 0,
+            difficulties: {
+                easy: false,
+                normal: false,
+                hard: false,
+                hell: false
+            }
         };
 
         // 从Cookie加载成就
@@ -434,9 +594,9 @@
             
             for (let cookie of cookies) {
                 const [name, value] = cookie.trim().split('=');
-                if (name === 'sg_achievements') {
+                if (name === 'sg_achievements_v2') {
                     achievementsData = decodeURIComponent(value);
-                } else if (name === 'sg_stats') {
+                } else if (name === 'sg_stats_v2') {
                     statsData = decodeURIComponent(value);
                 }
             }
@@ -467,10 +627,10 @@
         function saveAchievements() {
             const unlockedIds = ACHIEVEMENTS.filter(ach => ach.unlocked).map(ach => ach.id);
             const expiryDate = new Date();
-            expiryDate.setFullYear(expiryDate.getFullYear() + 1); // 保存1年
+            expiryDate.setFullYear(expiryDate.getFullYear() + 1);
             
-            document.cookie = `sg_achievements=${encodeURIComponent(JSON.stringify(unlockedIds))}; expires=${expiryDate.toUTCString()}; path=/`;
-            document.cookie = `sg_stats=${encodeURIComponent(JSON.stringify(stats))}; expires=${expiryDate.toUTCString()}; path=/`;
+            document.cookie = `sg_achievements_v2=${encodeURIComponent(JSON.stringify(unlockedIds))}; expires=${expiryDate.toUTCString()}; path=/`;
+            document.cookie = `sg_stats_v2=${encodeURIComponent(JSON.stringify(stats))}; expires=${expiryDate.toUTCString()}; path=/`;
             
             updateAchievementDisplay();
         }
@@ -508,7 +668,6 @@
             const progress = (unlockedCount / ACHIEVEMENTS.length) * 100;
             document.getElementById('progressFill').style.width = progress + '%';
             
-            // 更新统计显示
             document.getElementById('totalGames').innerText = stats.totalGames;
             document.getElementById('sRankCount').innerText = stats.sRankCount;
             document.getElementById('deathCount').innerText = stats.deathCount;
@@ -518,11 +677,44 @@
         function clearAchievements() {
             if (confirm('确定要清空所有成就吗？')) {
                 ACHIEVEMENTS.forEach(ach => ach.unlocked = false);
-                stats = { totalGames: 0, sRankCount: 0, deathCount: 0, aRankCount: 0, bRankCount: 0 };
+                stats = { totalGames: 0, sRankCount: 0, deathCount: 0, aRankCount: 0, bRankCount: 0, difficulties: { easy: false, normal: false, hard: false, hell: false } };
                 saveAchievements();
                 updateAchievementDisplay();
                 printToScreen('🗑️ 成就数据已清空');
             }
+        }
+
+        // 设置难度
+        window.setDifficulty = function(difficulty) {
+            currentDifficulty = difficulty;
+            const config = DIFFICULTY_CONFIG[difficulty];
+            
+            // 更新UI
+            document.querySelectorAll('.difficulty-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            document.querySelector(`.difficulty-btn.${difficulty}`).classList.add('selected');
+            
+            difficultyNameEl.innerText = config.name;
+            difficultyInfoEl.innerHTML = `⚡ ${config.desc}`;
+            
+            // 重置游戏时会应用新难度
+            printToScreen(`\n⚡ 难度已切换为: ${config.name}`);
+            printToScreen(`📋 ${config.desc}`);
+        };
+
+        // 获取当前难度配置
+        function getDifficultyConfig() {
+            return DIFFICULTY_CONFIG[currentDifficulty];
+        }
+
+        // 应用难度设置到游戏
+        function applyDifficulty() {
+            const config = getDifficultyConfig();
+            risk = config.initialRisk;
+            hideMax = config.hideMax;
+            hideCount = 0;
+            updateRisk(risk);
         }
 
         // 辅助函数: 输出到屏幕
@@ -537,11 +729,14 @@
 
         // 重置屏幕
         function resetScreenWithWelcome() {
+            const config = getDifficultyConfig();
             outputEl.innerHTML = `> 系统启动中...
 > 您已通过跳板机连接到生产环境 [10.0.0.1]
+> 当前难度: ${config.name}
 
 ⚠️  当前目录: /data/production/db
 ⚠️  距离自动审计日志上传还剩 5 分钟
+⚠️  ${config.desc}
 
 输入指令开始你的删库跑路计划...`;
         }
@@ -619,6 +814,19 @@
             // 增加游戏次数
             stats.totalGames++;
             
+            // 记录难度通关
+            if (isSuccess) {
+                stats.difficulties[currentDifficulty] = true;
+                
+                // 解锁难度成就
+                unlockAchievement(currentDifficulty + '_clear');
+                
+                // 检查是否全难度通关
+                if (stats.difficulties.easy && stats.difficulties.normal && stats.difficulties.hard && stats.difficulties.hell) {
+                    unlockAchievement('all_difficulties');
+                }
+            }
+            
             let endingMsg = message;
             let endingType = 'unknown';
             
@@ -641,7 +849,6 @@
                     stats.sRankCount++;
                     unlockAchievement('perfect_crime');
                     
-                    // 如果风险99%跑路，额外解锁
                     if (risk >= 99) {
                         unlockAchievement('survivor');
                     }
@@ -662,7 +869,6 @@
                     endingMsg = '💥 游戏意外结束。';
                 }
             } else {
-                // 自定义结局消息
                 if (message.includes('跑路成功')) {
                     endingType = 's_rank';
                     stats.sRankCount++;
@@ -688,7 +894,6 @@
             inputEl.disabled = true;
             inputEl.placeholder = '游戏结束，按重置继续';
             
-            // 保存成就
             saveAchievements();
         }
 
@@ -717,16 +922,22 @@
             const lowerCmd = cmd.toLowerCase().trim();
             if (lowerCmd === '') return;
 
-            // 记录历史
             commandHistory.push(originalCmd);
             if (commandHistory.length > 12) commandHistory.shift();
 
-            // 打印用户输入
             printToScreen(originalCmd, true);
 
-            // 解析命令
             const parts = originalCmd.trim().split(' ');
             const baseCmd = parts[0].toLowerCase();
+            
+            const config = getDifficultyConfig();
+
+            // 难度查询
+            if (baseCmd === 'difficulty' || baseCmd === '难度') {
+                printToScreen(`当前难度: ${config.name}`);
+                printToScreen(config.desc);
+                return;
+            }
 
             // 成就命令
             if (baseCmd === 'achievements' || baseCmd === '成就') {
@@ -771,16 +982,16 @@
             
             // 隐蔽降风险
             if (baseCmd === 'hide' || baseCmd === '隐蔽') {
-                if (hideCount >= 3) {
-                    printToScreen('你已经躲太多次了，机房没有其他地方可藏！');
+                if (hideCount >= hideMax) {
+                    printToScreen(`你已经躲太多次了（最大${hideMax}次），机房没有其他地方可藏！`);
                 } else {
                     hideCount++;
                     printToScreen('👻 你躲在机房的服务器后面，屏住呼吸...');
                     printToScreen('审计人员从你身边走过，没有发现你！风险降低了！');
                     updateRisk(risk - 15);
-                    printToScreen(`(隐蔽次数剩余: ${3 - hideCount})`);
+                    printToScreen(`(隐蔽次数: ${hideCount}/${hideMax})`);
                     
-                    if (hideCount === 3) {
+                    if (hideCount === hideMax) {
                         unlockAchievement('hide_master');
                     }
                 }
@@ -841,6 +1052,7 @@
                 printToScreen('  hide                   隐蔽（降低风险）');
                 printToScreen('  run / escape           跑路！提前结束游戏');
                 printToScreen('  achievements           查看成就');
+                printToScreen('  difficulty             查看当前难度');
                 printToScreen('  [其他] 会触发未知风险');
                 updateRisk(risk + 2);
             }
@@ -887,7 +1099,7 @@
                         updateRisk(risk + 5);
                         unlockAchievement('cat_config');
                     } else if (file === 'secret.db') {
-                        printToScreen('� 二进制数据乱码 ... 似乎包含用户密钥。');
+                        printToScreen('  二进制数据乱码 ... 似乎包含用户密钥。');
                         printToScreen('提示: 需要解密工具，但你急着跑路没空看。');
                         updateRisk(risk + 3);
                         unlockAchievement('cat_secret');
@@ -925,7 +1137,7 @@
                         printToScreen('🧾 删除 128 个表， 3.2GB 数据 ... 完成');
                         printToScreen('💀 核心数据已删除！ 但操作日志已被记录。');
                         dataDeleted = true;
-                        updateRisk(risk + 25);
+                        updateRisk(risk + config.rmRisk);
                         unlockAchievement('data_deleted');
                     }
                 } else if (target === '/' || target === '/*') {
@@ -947,7 +1159,7 @@
                     } else {
                         printToScreen('✅ 审计日志文件已删除！现在没有操作记录了！');
                         auditFileDeleted = true;
-                        updateRisk(risk + 20);
+                        updateRisk(risk + config.auditRisk);
                         unlockAchievement('audit_clean');
                     }
                 } else if (target === '.bash_history' || target === '~/.bash_history') {
@@ -970,7 +1182,7 @@
                     printToScreen('对不起，请重新输入。');
                     printToScreen('⚠️ 第二次尝试成功... 您现在是 root (但认证日志多了两条记录)');
                     sudoObtained = true;
-                    updateRisk(risk + 20);
+                    updateRisk(risk + config.sudoRisk);
                     unlockAchievement('sudo_root');
                 }
             }
@@ -984,10 +1196,9 @@
                     printToScreen('🕳️ 后门已执行：反向 shell 连接至 203.0.113.99:4444');
                     printToScreen('但出站流量触发了 ids 告警，审计风险飙升！');
                     secretBackdoorUsed = true;
-                    updateRisk(risk + 25);
+                    updateRisk(risk + config.backdoorRisk);
                     unlockAchievement('backdoor_used');
                     
-                    // 触发后门彩蛋
                     if (dataDeleted && !backdoorEasterEggTriggered) {
                         triggerBackdoorEasterEgg();
                     } else if (!backdoorEasterEggTriggered) {
@@ -1045,7 +1256,6 @@
 
             checkFailureCondition();
             
-            // 首次命令解锁成就
             if (commandHistory.length === 1 && !ACHIEVEMENTS.find(a => a.id === 'first_timer').unlocked) {
                 unlockAchievement('first_timer');
             }
@@ -1060,9 +1270,10 @@
                     timeLeft -= 1;
                     updateTimerDisplay();
                     
-                    // 每30秒自动增加风险
+                    const config = getDifficultyConfig();
+                    
                     if (timeLeft % 30 === 0 && timeLeft > 0) {
-                        updateRisk(risk + 2);
+                        updateRisk(risk + config.autoIncrease);
                         printToScreen(`⏰ 时间流逝，风险增加了... (当前 ${risk}%)`);
                     }
                     
@@ -1075,7 +1286,9 @@
 
         // 重置游戏
         function resetGame() {
-            risk = 15;
+            const config = getDifficultyConfig();
+            
+            risk = config.initialRisk;
             timeLeft = 300;
             gameOver = false;
             finalMessageShown = false;
@@ -1087,6 +1300,7 @@
             backdoorEasterEggTriggered = false;
             backdoorChoice = null;
             hideCount = 0;
+            hideMax = config.hideMax;
             highRiskWarningShown = false;
             commandHistory = [];
 
@@ -1100,7 +1314,6 @@
             if (timerInterval) clearInterval(timerInterval);
             startTimer();
             
-            // 刷新成就显示
             updateAchievementDisplay();
         }
 
@@ -1139,7 +1352,6 @@
             clearAchievements();
         });
 
-        // 成就面板折叠
         window.toggleAchievements = function() {
             const content = document.getElementById('achievementContent');
             const icon = document.getElementById('toggleIcon');
@@ -1157,7 +1369,6 @@
         resetGame();
         inputEl.focus();
         
-        // 首次显示成就
         updateAchievementDisplay();
     })();
 </script>
