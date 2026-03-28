@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>三模式时钟 | 翻页 | 精准经典 | 经典静态</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --body-bg: linear-gradient(135deg, #1a2a3a 0%, #0f1a24 100%);
+            --font-size: min(15vw, 120px);
+            --center-border: 2px solid rgba(0, 0, 0, 0.5);
+            --col-width: min(13vw, 110px);
+            --col-height: min(18vw, 150px);
+            --col-color: #f0f0f0;
+            --col-bg: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+            --shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        body {
+            min-height: 100vh;
+            background: var(--body-bg);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Courier New', 'Fira Mono', 'Segoe UI', monospace;
+            position: relative;
+            padding: 20px;
+        }
+
+        /* 模式切换按钮组 */
+        .mode-buttons {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 12px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            padding: 8px 20px;
+            border-radius: 50px;
+            z-index: 100;
+            flex-wrap: wrap;
+            justify-content: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .mode-btn {
+            padding: 8px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.1);
+            color: #ccc;
+            font-family: inherit;
+        }
+
+        .mode-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .mode-btn.active {
+            background: #3b84dd;
+            color: white;
+            box-shadow: 0 2px 10px rgba(59, 132, 221, 0.5);
+        }
+
+        /* 时钟容器 */
+        .clock-wrapper {
+            margin-top: 60px;
+        }
+
+        /* 翻页时钟样式 */
+        .flip-clock {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1vw;
+            font-family: sans-serif;
+            font-weight: 700;
+        }
+
+        .col {
+            width: var(--col-width);
+            height: var(--col-height);
+            perspective: var(--col-height);
+        }
+        .col:nth-child(3),
+        .col:nth-child(5) {
+            margin-left: 2vw;
+        }
+
+        .curr, .next {
+            position: relative;
+            width: var(--col-width);
+            height: calc(var(--col-height) / 2);
+            font-size: var(--font-size);
+            background: var(--col-bg);
+            border-radius: 1vw;
+            color: var(--col-color);
+            overflow: hidden;
+            box-sizing: border-box;
+            box-shadow: var(--shadow);
+        }
+
+        .flip .curr::before,
+        .flip .next::before,
+        .col > .curr::before,
+        .col > .next::before {
+            position: absolute;
+            content: attr(data-t);
+            line-height: var(--col-height);
+            text-align: center;
+            height: var(--col-height);
+            left: 0;
+            right: 0;
+            font-weight: 800;
+        }
+
+        .flip .curr::before,
+        .col > .next::before {
+            top: 0;
+        }
+
+        .flip .next::before,
+        .col > .curr::before {
+            bottom: 0;
+        }
+
+        .flip .curr,
+        .col > .next {
+            border-bottom: var(--center-border);
+        }
+
+        .flip .next,
+        .col > .curr {
+            border-top: var(--center-border);
+        }
+
+        .flip .next {
+            transform: rotateX(-180deg);
+            backface-visibility: hidden;
+        }
+
+        .flip .curr {
+            position: absolute;
+            top: 0;
+            backface-visibility: hidden;
+        }
+
+        .flip {
+            position: absolute;
+            width: var(--col-width);
+            height: var(--col-height);
+            z-index: 1;
+            transform-style: preserve-3d;
+            transition: transform 0s;
+            transform: rotateX(0);
+        }
+
+        .flip.active {
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+            transform: rotateX(-180deg);
+        }
+
+        /* 经典时钟样式（静态/精准共用） */
+        .classic-clock {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: min(2vw, 20px);
+            font-family: 'Courier New', monospace;
+            font-weight: 700;
+            background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+            padding: 30px 50px;
+            border-radius: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .classic-digit {
+            background: linear-gradient(145deg, #3a3a4a, #2a2a3a);
+            border-radius: 15px;
+            padding: 20px 25px;
+            min-width: min(13vw, 110px);
+            text-align: center;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.3), 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .classic-digit span {
+            font-size: var(--font-size);
+            color: #f0f0f0;
+            text-shadow: 0 0 10px rgba(59, 132, 221, 0.5);
+            font-weight: 800;
+        }
+
+        .classic-separator {
+            font-size: var(--font-size);
+            font-weight: 700;
+            color: #3b84dd;
+            text-shadow: 0 0 8px rgba(59, 132, 221, 0.5);
+            margin: 0 5px;
+        }
+
+        /* 精准模式额外显示毫秒 */
+        .precision-ms {
+            margin-top: 20px;
+            text-align: center;
+            font-size: min(3vw, 28px);
+            color: #7f8c8d;
+            font-family: monospace;
+            background: rgba(0,0,0,0.4);
+            padding: 8px 20px;
+            border-radius: 40px;
+            display: inline-block;
+            letter-spacing: 2px;
+        }
+
+        .classic-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        /* 隐藏类 */
+        .hidden {
+            display: none !important;
+        }
+
+        /* 日期显示 */
+        .date-display {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.6);
+            font-family: monospace;
+            background: rgba(0,0,0,0.3);
+            padding: 6px 16px;
+            border-radius: 30px;
+        }
+
+        @media (max-width: 700px) {
+            .mode-buttons {
+                top: 10px;
+                gap: 6px;
+                padding: 6px 12px;
+            }
+            .mode-btn {
+                padding: 5px 12px;
+                font-size: 11px;
+            }
+            .clock-wrapper {
+                margin-top: 70px;
+            }
+            .classic-digit {
+                padding: 12px 15px;
+                min-width: 70px;
+            }
+            .classic-digit span {
+                font-size: min(12vw, 70px);
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="mode-buttons">
+    <button class="mode-btn active" data-mode="flip">📖 翻页模式</button>
+    <button class="mode-btn" data-mode="precision">⚡ 精准经典（含毫秒）</button>
+    <button class="mode-btn" data-mode="static">🕐 经典静态（无毫秒）</button>
+</div>
+
+<div class="clock-wrapper">
+    <!-- 翻页时钟容器 -->
+    <div class="flip-clock" id="flipClock"></div>
+
+    <!-- 经典时钟容器（精准/静态共用） -->
+    <div class="classic-container hidden" id="classicContainer">
+        <div class="classic-clock" id="classicClock">
+            <div class="classic-digit"><span id="hour10">0</span></div>
+            <div class="classic-digit"><span id="hour1">0</span></div>
+            <span class="classic-separator">:</span>
+            <div class="classic-digit"><span id="min10">0</span></div>
+            <div class="classic-digit"><span id="min1">0</span></div>
+            <span class="classic-separator">:</span>
+            <div class="classic-digit"><span id="sec10">0</span></div>
+            <div class="classic-digit"><span id="sec1">0</span></div>
+        </div>
+        <div class="precision-ms hidden" id="precisionMs">.000</div>
+    </div>
+
+    <div class="date-display" id="dateDisplay"></div>
+</div>
+
+<script>
+    (function() {
+        // 当前模式: 'flip', 'precision', 'static'
+        let currentMode = 'flip';
+        
+        // DOM 元素
+        const flipClockDiv = document.getElementById('flipClock');
+        const classicContainer = document.getElementById('classicContainer');
+        const precisionMsDiv = document.getElementById('precisionMs');
+        const dateDisplay = document.getElementById('dateDisplay');
+        
+        // 经典时钟数字元素
+        const classicDigits = {
+            hour10: document.getElementById('hour10'),
+            hour1: document.getElementById('hour1'),
+            min10: document.getElementById('min10'),
+            min1: document.getElementById('min1'),
+            sec10: document.getElementById('sec10'),
+            sec1: document.getElementById('sec1')
+        };
+        
+        // ==================== 翻页时钟相关 ====================
+        let colElms = [];
+        
+        function getTimeStr(date = new Date()) {
+            return [date.getHours(), date.getMinutes(), date.getSeconds()]
+                .map((item) => item.toString().padStart(2, "0"))
+                .join("");
+        }
+        
+        function createCol() {
+            const createEl = (cls) => {
+                const div = document.createElement("div");
+                div.classList.add(cls);
+                return div;
+            };
+            const [col, flip, flipNext, flipCurr, next, curr] = ["col", "flip", "next", "curr", "next", "curr"].map(
+                (cls) => createEl(cls)
+            );
+            flip.append(flipNext, flipCurr);
+            col.append(flip, next, curr);
+            return {
+                element: col,
+                toggleActive: () => flip.classList.toggle("active"),
+                getCurr: () => curr.dataset.t,
+                setCurr: (t) => [flipCurr, curr].forEach((el) => (el.dataset.t = t)),
+                setNext: (t) => [flipNext, next].forEach((el) => (el.dataset.t = t)),
+            };
+        }
+        
+        function initFlipClock() {
+            flipClockDiv.innerHTML = '';
+            colElms = [];
+            for (let i = 0; i < 6; i++) {
+                const col = createCol();
+                flipClockDiv.appendChild(col.element);
+                colElms.push(col);
+            }
+            const timeStr = getTimeStr();
+            colElms.forEach(({ setCurr }, i) => {
+                setCurr(timeStr[i]);
+            });
+        }
+        
+        let lastSec = new Date().getSeconds();
+        
+        function updateFlipClock() {
+            let s = new Date().getSeconds();
+            if (s === lastSec) {
+                return;
+            }
+            lastSec = s;
+            const currStr = getTimeStr();
+            colElms.forEach(({ toggleActive, getCurr, setCurr, setNext }, i) => {
+                var currTxt = getCurr();
+                setNext(currStr[i]);
+                if (currTxt !== currStr[i]) {
+                    toggleActive();
+                    setTimeout(() => {
+                        toggleActive();
+                        setCurr(currStr[i]);
+                    }, 400);
+                }
+            });
+        }
+        
+        // ==================== 经典时钟（精准/静态共用） ====================
+        function updateClassicDigits(includeMs = false) {
+            const now = new Date();
+            const hours = padZero(now.getHours());
+            const minutes = padZero(now.getMinutes());
+            const seconds = padZero(now.getSeconds());
+            
+            classicDigits.hour10.textContent = hours[0];
+            classicDigits.hour1.textContent = hours[1];
+            classicDigits.min10.textContent = minutes[0];
+            classicDigits.min1.textContent = minutes[1];
+            classicDigits.sec10.textContent = seconds[0];
+            classicDigits.sec1.textContent = seconds[1];
+            
+            if (includeMs) {
+                const ms = padZero(now.getMilliseconds(), 3);
+                precisionMsDiv.textContent = `.${ms}`;
+            }
+        }
+        
+        function padZero(num, len = 2) {
+            return num.toString().padStart(len, '0');
+        }
+        
+        // 精准模式专用（高频率刷新毫秒）
+        let precisionTimer = null;
+        let staticTimer = null;
+        
+        function startPrecisionMode() {
+            if (precisionTimer) clearInterval(precisionTimer);
+            // 每16ms刷新一次（约60fps），保证毫秒流畅
+            precisionTimer = setInterval(() => {
+                if (currentMode === 'precision') {
+                    updateClassicDigits(true);
+                }
+            }, 16);
+            updateClassicDigits(true);
+        }
+        
+        function startStaticMode() {
+            if (staticTimer) clearInterval(staticTimer);
+            // 静态模式每秒刷新一次
+            staticTimer = setInterval(() => {
+                if (currentMode === 'static') {
+                    updateClassicDigits(false);
+                }
+            }, 1000);
+            updateClassicDigits(false);
+        }
+        
+        // ==================== 翻页动画循环 ====================
+        let flipTimer = null;
+        
+        function startFlipMode() {
+            if (flipTimer) clearInterval(flipTimer);
+            // 使用 requestAnimationFrame 风格的递归，但只在秒变化时更新
+            lastSec = new Date().getSeconds();
+            function flipLoop() {
+                if (currentMode === 'flip') {
+                    updateFlipClock();
+                }
+                requestAnimationFrame(flipLoop);
+            }
+            flipTimer = true; // 标记已启动
+            // 使用 requestAnimationFrame 保证流畅检查
+            function animFrame() {
+                if (currentMode === 'flip') {
+                    updateFlipClock();
+                }
+                requestAnimationFrame(animFrame);
+            }
+            window._flipRAF = animFrame;
+            requestAnimationFrame(animFrame);
+            // 初始化显示
+            const initStr = getTimeStr();
+            colElms.forEach(({ setCurr, setNext }, i) => {
+                setCurr(initStr[i]);
+                setNext(initStr[i]);
+            });
+        }
+        
+        // 停止所有定时器
+        function stopAllTimers() {
+            if (precisionTimer) clearInterval(precisionTimer);
+            if (staticTimer) clearInterval(staticTimer);
+            if (window._flipRAF) {
+                // 无法取消 requestAnimationFrame，但通过条件判断停止执行
+                window._flipRAF = null;
+            }
+        }
+        
+        // ==================== 更新日期显示 ====================
+        function updateDate() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = now.getMonth() + 1;
+            const day = now.getDate();
+            const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+            const weekday = weekdays[now.getDay()];
+            dateDisplay.textContent = `${year}年${month}月${day}日 ${weekday}`;
+        }
+        
+        // ==================== 模式切换 ====================
+        function switchMode(mode) {
+            currentMode = mode;
+            
+            // 更新按钮样式
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                if (btn.dataset.mode === mode) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            
+            // 停止所有运行中的定时器
+            stopAllTimers();
+            
+            if (mode === 'flip') {
+                // 显示翻页时钟，隐藏经典容器
+                flipClockDiv.classList.remove('hidden');
+                classicContainer.classList.add('hidden');
+                // 重新初始化翻页时钟（确保DOM干净）
+                initFlipClock();
+                startFlipMode();
+            } else {
+                // 经典模式（精准或静态）
+                flipClockDiv.classList.add('hidden');
+                classicContainer.classList.remove('hidden');
+                
+                if (mode === 'precision') {
+                    // 精准经典：显示毫秒
+                    precisionMsDiv.classList.remove('hidden');
+                    startPrecisionMode();
+                } else {
+                    // 经典静态：隐藏毫秒
+                    precisionMsDiv.classList.add('hidden');
+                    startStaticMode();
+                }
+            }
+            
+            // 更新日期（所有模式共享）
+            updateDate();
+        }
+        
+        // ==================== 绑定按钮事件 ====================
+        function bindEvents() {
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const mode = btn.dataset.mode;
+                    if (mode === 'flip' || mode === 'precision' || mode === 'static') {
+                        switchMode(mode);
+                    }
+                });
+            });
+        }
+        
+        // ==================== 初始化 ====================
+        function init() {
+            bindEvents();
+            initFlipClock();
+            startFlipMode();
+            updateDate();
+            
+            // 每分钟更新一次日期
+            setInterval(() => {
+                updateDate();
+            }, 60000);
+        }
+        
+        init();
+    })();
+</script>
+</body>
+</html>
