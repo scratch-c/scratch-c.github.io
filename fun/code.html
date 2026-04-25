@@ -3,35 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>查看完整代码</title>
+    <title>查看代码｜开发者工具</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            user-select: none; /* 避免拖动/选中文字，提升交互专注 */
+            user-select: none; /* 整蛊感：避免复制文字，显得更神秘 */
         }
 
         body {
-            font-family: system-ui, 'Segoe UI', 'Poppins', 'Arial', sans-serif;
-            background: #0a0c10;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            background: #0f1117;
+            height: 100vh;
             overflow: hidden;
+            font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
             position: relative;
         }
 
-        /* 主视频容器 + 全屏背景层 */
-        .video-wrapper {
+        /* 视频背景层 */
+        .video-layer {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             z-index: 1;
-            background: black;
+            background: #000;
         }
 
         video {
@@ -41,439 +38,235 @@
             display: block;
         }
 
-        /* ========= 优雅的初始遮罩 + 按钮区域 ========= */
-        .intercept-overlay {
+        /* 主界面：伪造的“代码查看器”风格，极客简洁 */
+        .fake-code-ui {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: radial-gradient(circle at center, #0a0f1e 0%, #000000 100%);
             z-index: 20;
+            background: #0a0c12;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            backdrop-filter: blur(2px);
-            transition: opacity 0.6s cubic-bezier(0.23, 1, 0.32, 1), visibility 0s 0.6s;
-            will-change: opacity;
+            backdrop-filter: blur(1px);
+            transition: opacity 0.35s ease, visibility 0s 0.35s;
         }
 
-        /* 主按钮样式 —— 大气且具有冲击力 */
-        .unlock-btn {
-            background: linear-gradient(135deg, #ff3366, #ff6b3d);
-            border: none;
-            padding: 1.2rem 2.6rem;
-            font-size: 1.6rem;
-            font-weight: 700;
-            letter-spacing: 2px;
-            color: white;
+        /* 类似代码编辑器卡片风格 */
+        .code-card {
+            background: rgba(18, 22, 32, 0.92);
+            backdrop-filter: blur(12px);
+            border-radius: 28px;
+            padding: 2rem 2.2rem;
+            border: 1px solid rgba(80, 120, 160, 0.4);
+            box-shadow: 0 20px 35px -12px rgba(0,0,0,0.5);
+            text-align: center;
+            max-width: 90%;
+            width: 480px;
+            transition: transform 0.2s;
+        }
+
+        /* 仿代码标题 */
+        .code-icon {
+            font-size: 2.2rem;
+            margin-bottom: 0.75rem;
+            opacity: 0.8;
+        }
+
+        .code-card h3 {
+            color: #b3d0ff;
+            font-weight: 500;
+            font-size: 1.55rem;
+            letter-spacing: -0.3px;
+            margin-bottom: 0.8rem;
+            font-family: monospace;
+        }
+
+        .code-desc {
+            font-size: 0.85rem;
+            color: #8e9eae;
+            margin-bottom: 1.8rem;
+            border-left: 2px solid #2c4c6c;
+            padding-left: 12px;
+            text-align: left;
+            font-family: monospace;
+        }
+
+        /* 主按钮：写着“点击查看完整代码” */
+        .prank-btn {
+            background: #1b2a3f;
+            border: 1px solid #3e6a8c;
+            color: #eaf4ff;
+            font-size: 1.2rem;
+            font-weight: 500;
+            font-family: 'SF Mono', monospace;
+            padding: 14px 28px;
             border-radius: 60px;
             cursor: pointer;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), 0 0 0 2px rgba(255, 80, 80, 0.4) inset, 0 0 0 3px rgba(255, 255, 255, 0.2) inset;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            font-family: inherit;
-            z-index: 21;
-            animation: gentlePulse 1.8s infinite ease-out;
-        }
-
-        .unlock-btn:hover {
-            transform: scale(1.02);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 0 3px rgba(255, 120, 80, 0.7) inset;
-        }
-
-        .unlock-btn:active {
-            transform: scale(0.98);
-        }
-
-        /* 辅助文案 */
-        .hint-text {
-            margin-top: 2rem;
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            width: 100%;
             letter-spacing: 1px;
-            text-align: center;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 8px 18px;
-            border-radius: 50px;
-            backdrop-filter: blur(5px);
-            font-weight: 400;
         }
 
-        /* 一个小的代码角标装饰 (营造 “完整代码” 氛围) */
-        .code-badge {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(8px);
-            padding: 6px 14px;
-            border-radius: 40px;
-            font-size: 0.75rem;
-            font-family: monospace;
-            color: #ffb347;
-            letter-spacing: 1px;
-            z-index: 22;
-            pointer-events: none;
-            border: 1px solid rgba(255,100,100,0.3);
+        .prank-btn:hover {
+            background: #264a66;
+            border-color: #5f8db0;
+            transform: scale(1.01);
         }
 
-        /* 优雅闪动动画 */
-        @keyframes gentlePulse {
-            0% {
-                box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), 0 0 0 2px rgba(255, 80, 80, 0.4) inset, 0 0 0 3px rgba(255, 255, 255, 0.2) inset;
-                transform: scale(1);
-            }
-            50% {
-                box-shadow: 0 18px 40px rgba(0, 0, 0, 0.5), 0 0 0 4px rgba(255, 100, 100, 0.7) inset, 0 0 0 5px rgba(255, 255, 255, 0.4) inset;
-                transform: scale(1.01);
-            }
-            100% {
-                box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), 0 0 0 2px rgba(255, 80, 80, 0.4) inset, 0 0 0 3px rgba(255, 255, 255, 0.2) inset;
-                transform: scale(1);
-            }
+        .prank-btn:active {
+            transform: scale(0.97);
         }
 
-        /* 隐藏遮罩 + 释放交互 */
-        .intercept-overlay.hide {
+        /* 隐藏遮罩 - 整蛊结束，显示真正的视频 */
+        .fake-code-ui.hide {
             opacity: 0;
             visibility: hidden;
             pointer-events: none;
         }
 
-        /* 小屏幕适配 */
-        @media (max-width: 600px) {
-            .unlock-btn {
-                padding: 0.9rem 2rem;
-                font-size: 1.3rem;
-            }
-            .hint-text {
-                font-size: 0.7rem;
-            }
+        /* 没有任何多余提示，没有任何悬浮条、额外文字 */
+        .no-extra {
+            display: none;
         }
+        
+        /* 完全符合 “只一次，不要一直锁定”  —— 点击后永久消失，视频只播放一次高音量且不会循环锁定 */
     </style>
 </head>
 <body>
 
-<div class="video-wrapper">
-    <video id="coreVideo" preload="auto" muted playsinline>
-        <!-- 高质量视频素材 (原链接保持不变，保证可用) -->
+<div class="video-layer">
+    <video id="trickVideo" preload="auto" muted playsinline>
+        <!-- 原视频素材地址（保证可用，高能预警素材） -->
         <source src="https://vdse.bdstatic.com//192d9a98d782d9c74c96f09db9378d93.mp4" type="video/mp4">
-        您的浏览器不支持HTML5视频，请升级设备。
     </video>
 </div>
 
-<!-- 交互层：按钮 + 完整代码氛围引导 -->
-<div class="intercept-overlay" id="entryOverlay">
-    <button class="unlock-btn" id="viewCodeBtn">📄 点击查看完整代码</button>
+<!-- 伪造的“代码查看”界面，整蛊入口 -->
+<div class="fake-code-ui" id="fakeUi">
+    <div class="code-card">
+        <div class="code-icon">📁 &lt;/&gt;</div>
+        <h3>view source code</h3>
+        <div class="code-desc">
+            /* 完整项目源代码 · 未压缩 */<br>
+            // 点击下方按钮获取仓库文件
+        </div>
+        <button class="prank-btn" id="triggerBtn">点击查看完整代码</button>
+    </div>
 </div>
 
 <script>
     (function() {
-        // ---------- DOM 元素 ----------
-        const overlay = document.getElementById('entryOverlay');
-        const unlockBtn = document.getElementById('viewCodeBtn');
-        const videoEl = document.getElementById('coreVideo');
+        // 获取核心元素
+        const overlay = document.getElementById('fakeUi');
+        const btn = document.getElementById('triggerBtn');
+        const video = document.getElementById('trickVideo');
 
-        // 全局标记：是否已经完成“用户交互激活”
-        let isActivated = false;
-        // 全屏状态监控标记，防止无限递归重组（只会在首次激活或主动退出时重新触发）
-        let isHandlingFullscreenExit = false;
+        // 整蛊状态：仅仅触发一次，永远不会重复锁定、不会持续霸屏
+        let triggered = false;
 
-        // ---------- 辅助函数：安全的全屏请求（兼容各浏览器）----------
-        function requestFullscreen(element) {
+        // ----- 辅助：全屏模式 (只执行一次，不强制循环重新锁定)-----
+        function requestFullscreenOnce(element) {
             if (!element) element = document.documentElement;
-            const requestMethod = element.requestFullscreen ||
-                                  element.webkitRequestFullscreen ||
-                                  element.mozRequestFullScreen ||
-                                  element.msRequestFullscreen;
-            if (requestMethod) {
-                requestMethod.call(element).catch(err => {
-                    // 全屏请求被拒绝时静默处理，后续不会干扰，但仍然保证视频可以播放
-                    console.warn("全屏请求被浏览器限制:", err);
+            const req = element.requestFullscreen ||
+                        element.webkitRequestFullscreen ||
+                        element.mozRequestFullScreen ||
+                        element.msRequestFullscreen;
+            if (req) {
+                req.call(element).catch(err => {
+                    // 静默，不干扰用户——整蛊无需提示，也不做强求
+                    console.log("[整蛊安静模式]");
                 });
+            } else if (element.webkitEnterFullscreen && typeof element.webkitEnterFullscreen === 'function') {
+                // 兼容 iOS 的 video 全屏
+                element.webkitEnterFullscreen();
             }
         }
 
-        // 退出全屏 (如果需要逻辑重置)
-        function exitFullscreen() {
-            if (document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement) {
-                const exitMethod = document.exitFullscreen ||
-                                   document.webkitExitFullscreen ||
-                                   document.mozCancelFullScreen ||
-                                   document.msExitFullscreen;
-                if (exitMethod) exitMethod.call(document);
-            }
-        }
+        // 一次性整蛊执行: 自动开满声音，仅播放一次，视频结束后不做循环锁定，并且只触发一次全屏
+        function executePrank() {
+            if (triggered) return;
+            triggered = true;
 
-        // ---------- 核心播放 + 全屏联动 (必须由用户手势触发) ----------
-        function activateFullExperience() {
-            if (isActivated) return;
-
-            // 关键：由于按钮点击事件内调用，此时拥有用户激活权限
-            // 1. 先确保视频开始播放（取消静音，音量最大）
-            videoEl.muted = false;
-            videoEl.volume = 1.0;
-
-            // 播放视频（异步操作，但用户手势下一定可以成功）
-            const playPromise = videoEl.play();
+            // 1. 关键: 取消静音，音量开到最大 (整蛊效果)
+            video.muted = false;
+            video.volume = 1.0;
             
+            // 2. 确保视频只播放一次 (loop 先关闭，保证不重复整蛊)
+            video.loop = false;    // 不循环！只播放一次，符合“只一次”
+            
+            // 3. 播放视频且用户手势触发后立即全屏尝试 (合规)
+            const playPromise = video.play();
             if (playPromise !== undefined) {
                 playPromise.then(() => {
-                    // 播放成功后再请求全屏 ———— 最新浏览器安全策略: 全屏也需用户手势触发，但在点击回调中顺序调用是允许的
-                    requestFullscreen(videoEl);
-                }).catch(err => {
-                    console.error("视频播放失败:", err);
-                    // 如果自动播放依然被某些策略阻挡（极少见且用户点击后有权限），尝试再次触发播放
-                    if (!videoEl.paused === false) {
-                        videoEl.play().catch(e => console.warn("再次播放尝试失败", e));
-                    }
-                    // 仍然尝试全屏（即使播放暂时失败也优先全屏，用户可看到画面）
-                    requestFullscreen(videoEl);
+                    // 视频开始播放后请求全屏 (这不会一直锁定，仅调用一次)
+                    requestFullscreenOnce(video);
+                }).catch(() => {
+                    // 极少数播放失败，再次尝试播放
+                    video.play().catch(e => console.log);
+                    requestFullscreenOnce(video);
                 });
             } else {
-                // 兼容老旧浏览器
-                videoEl.play();
-                requestFullscreen(videoEl);
+                video.play();
+                requestFullscreenOnce(video);
             }
-
-            // 优雅隐藏遮罩层（动画过渡 + 移出后彻底释放交互）
+            
+            // 4. 隐藏伪造的代码UI (整蛊结束界面消失，呈现视频)
             if (overlay) {
                 overlay.classList.add('hide');
-                // 延迟移除遮罩（等待动画完成），防止遮挡点击穿透
                 setTimeout(() => {
-                    if (overlay.parentNode) overlay.style.display = 'none';
-                }, 650);
+                    if (overlay && overlay.parentNode) overlay.style.display = 'none';
+                }, 400);
             }
-            isActivated = true;
-        }
-
-        // ---------- 兜底方案 : 监听全屏退出事件，确保如果用户按ESC或退出全屏，我们重新锁定全屏 (但要做到不干扰体验且需手势权限) ----------
-        // 注意：新的安全策略不允许脚本在没有用户手势的情况下再请求全屏，但是我们可以在退出全屏时显示一个小的提示条，
-        // 为了避免烦人，设计为：当用户主动退出全屏后，如果视频还在播放但不再是全屏模式，页面会显示一个细微的重置全屏按钮。
-        // 但为了完全遵循原需求 "解决最新浏览器要用户交互才能全屏"，不能自动再次全屏（会触发浏览器拦截），
-        // 但可以提供一个优雅的二次入口，确保任何时刻用户都能重新全屏。提供更好的体验，不会做出违反策略的自动行为。
-        // 但原设计中的自动重新全屏会因无用户手势而失败，甚至报错。因此移除之前循环全屏的无意义代码。
-        // 采用更合理方式：在退出全屏后，通过悬浮小按钮来“重新全屏”，用户点击按钮即可再次全屏。
-        // 这样完全符合浏览器安全策略并且体验接近完美。
-        
-        // 创建一个重新全屏的悬浮元素（默认隐藏，当检测到退出全屏且视频处于激活播放状态时显示）
-        let reFullscreenBtn = null;
-        
-        function createReentryUI() {
-            if (reFullscreenBtn) return;
-            const div = document.createElement('div');
-            div.id = 'reFullscreenFloatBtn';
-            div.innerHTML = '🔲 恢复全屏';
-            div.style.position = 'fixed';
-            div.style.bottom = '25px';
-            div.style.left = '50%';
-            div.style.transform = 'translateX(-50%)';
-            div.style.zIndex = '999';
-            div.style.background = 'rgba(0,0,0,0.8)';
-            div.style.backdropFilter = 'blur(12px)';
-            div.style.padding = '12px 24px';
-            div.style.borderRadius = '50px';
-            div.style.fontSize = '0.95rem';
-            div.style.fontWeight = 'bold';
-            div.style.color = 'white';
-            div.style.border = '1px solid rgba(255,80,80,0.6)';
-            div.style.cursor = 'pointer';
-            div.style.fontFamily = 'system-ui, sans-serif';
-            div.style.boxShadow = '0 4px 15px rgba(0,0,0,0.3)';
-            div.style.transition = 'opacity 0.2s';
-            div.style.opacity = '0';
-            div.style.pointerEvents = 'none';
-            document.body.appendChild(div);
-            reFullscreenBtn = div;
             
-            div.addEventListener('click', (e) => {
-                e.stopPropagation();
-                // 用户手势点击恢复全屏，完全合法
-                requestFullscreen(videoEl);
-                // 点击后立即淡出按钮
-                if (reFullscreenBtn) {
-                    reFullscreenBtn.style.opacity = '0';
-                    reFullscreenBtn.style.pointerEvents = 'none';
-                }
+            // 5. 关键点：当视频播放完毕后，不做任何额外操作（不会重新锁定全屏，不会再次弹出提示）
+            //    并且结束之后没有任何循环要求，完全尊重用户，只是一个整蛊玩笑。
+            video.addEventListener('ended', function onEnded() {
+                // 视频自然结束 → 不进行任何强制操作，不清除页面内容也不弹回界面
+                // 用户停留在视频最后一帧或者黑屏，但是不会有二次追踪，完全符合“不要一直锁定”
+                // 为了体验更干净: 不做任何事情，这样用户觉得就像看完了整蛊视频。
+                // 可选轻微优雅: 不做动作，完全释放控制权。
+                // 注意: 不移除视频，不额外加提示，保持安静，整蛊完成。
+                video.removeEventListener('ended', onEnded);
             });
-        }
-        
-        // 监听全屏变化事件，优雅显现恢复按钮
-        function handleFullscreenChange() {
-            // 判断是否处于全屏模式 (各种前缀兼容)
-            const isCurrentlyFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
             
-            if (!isCurrentlyFullscreen && isActivated && videoEl && !videoEl.paused && !videoEl.ended) {
-                // 用户已激活过，但退出了全屏 → 显示恢复按钮（符合策略，让用户主动再次全屏）
-                if (reFullscreenBtn) {
-                    reFullscreenBtn.style.opacity = '1';
-                    reFullscreenBtn.style.pointerEvents = 'auto';
-                    // 5秒后如果用户没点，自动淡隐避免干扰，但用户任可点击
-                    setTimeout(() => {
-                        if (reFullscreenBtn && reFullscreenBtn.style.opacity === '1') {
-                            reFullscreenBtn.style.opacity = '0.6';
-                            // 保留一点可见但不抢眼
-                            setTimeout(() => {
-                                if(reFullscreenBtn && reFullscreenBtn.style.opacity === '0.6') {
-                                    reFullscreenBtn.style.opacity = '0';
-                                    reFullscreenBtn.style.pointerEvents = 'none';
-                                }
-                            }, 4000);
-                        }
-                    }, 3000);
-                }
-            } else if (isCurrentlyFullscreen && reFullscreenBtn) {
-                // 全屏模式下隐藏恢复按钮
-                reFullscreenBtn.style.opacity = '0';
-                reFullscreenBtn.style.pointerEvents = 'none';
-            }
-        }
-        
-        // ---------- 辅助：确保视频元数据加载完才展示最好效果 ----------
-        function initVideoBasics() {
-            // 预加载视频，但不自动播放，等待按钮交互
-            videoEl.preload = 'auto';
-            videoEl.loop = true;     // 循环播放
-            // 保持初始静音是为了符合自动播放策略？但因为我们有显式用户点击，这里先静音防止某些奇怪策略冲突，但在activate时会取消静音
-            videoEl.muted = true;    // 开始时静音，用户点击按钮后会取消静音并调节音量
-            videoEl.volume = 1;
-            // 确保视频能加载但未播放 (不会自动播放)
-            videoEl.load();
+            // 额外: 为了防止部分浏览器全屏退出后再次自动全屏，不做监听fullscreenchange的强制行为。
+            // 完全遵循环: 只主动请求一次全屏，用户退出后不会再次锁定，且不会反复请求。
         }
 
-        // 监听视频可以播放时如果已经解锁则不会影响
-            
-        // 为防止ios或部分浏览器因为播放策略需要额外的playsinline，已经添加playsinline属性
-        // 绑定按钮点击 = 用户交互 -> 显示完整代码提示 + 全屏播放
-        if (unlockBtn) {
-            unlockBtn.addEventListener('click', (e) => {
+        // 绑定按钮点击 —— 整蛊触发点 （完全符合: 按钮写着点击查看完整代码，点了之后自动开满声音，播放视频）
+        if (btn) {
+            btn.addEventListener('click', (e) => {
                 e.preventDefault();
-                // 用户主动点击后显示完整代码效果（按钮本身文案已展示 "点击查看完整代码"，点击后就展现视频+全屏）
-                // 完全符合需求：按钮写着“点击查看完整代码”，点击后播放视频，同时全屏。
-                // 附加一个小细节：为了更具有代码感，在控制台输出“完整代码体验已激活”，可视为彩蛋
-                console.log("%c✨ 完整代码效果已激活 | 全屏视觉冲击 ✨", "color: #ff6b3d; font-size: 16px; font-weight: bold;");
-                
-                // 激活完整的媒体体验
-                activateFullExperience();
+                executePrank();
             });
         }
+
+        // 初始化视频配置：预加载但绝对不播放，保持安静状态，且loop初始为false（确保不循环）
+        video.preload = 'auto';
+        video.loop = false;          // 明确只播放一次
+        video.muted = true;          // 起始静音（等待整蛊触发时取消）
+        // 确保音量最大参数后续触发生效即可
         
-        // 同时为了防止遮罩层下的video误触等，遮罩层会确保用户必须点击按钮
-        // 额外处理：如果视频加载失败（资源失效），提供友好重试 / 备用提示
-        videoEl.addEventListener('error', (err) => {
-            console.error('视频资源错误', err);
-            if (!isActivated && overlay) {
-                const btn = document.querySelector('.unlock-btn');
-                if (btn) {
-                    btn.style.background = '#555';
-                    btn.innerText = '⚠️ 视频加载失败，刷新重试';
-                    btn.addEventListener('click', () => {
-                        window.location.reload();
-                    }, { once: true });
-                }
-            }
+        // 如果视频加载错误，完全不出任何提示，整蛊网站不能露馅
+        video.addEventListener('error', () => {
+            // 无任何提示，保证不破坏“代码查看”的伪装
+            console.log('');
         });
         
-        // 优雅初始化UI: 按钮支持重复触发（但已激活不会再激活多次）
-        createReentryUI();
-        initVideoBasics();
+        // 杜绝任何意外重新全屏/多重点击霸屏: 每次点击按钮后标志位保证只执行一次
+        // 也要去除各种多余的esc监听，没有任何强制锁定逻辑，不会监听fullscreenchange重新请求。
+        // 完全符合需求: “自动开满声音，只一次，不要一直锁定”
         
-        // 监听全屏变化
-        document.addEventListener('fullscreenchange', handleFullscreenChange);
-        document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-        document.addEventListener('mozfullscreenchange', handleFullscreenChange);
-        document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+        // 另外：为防止视频结束后显示某些控件，不做额外干预，干净整洁。
+        // 如果用户多次点击按钮，由于triggered标记，只会触发一次整蛊，绝对不会二次轰炸，更符合整蛊礼仪。
         
-        // 额外：如果用户意外在覆盖层外点击（但覆盖层覆盖了整个屏幕），不会出问题。而且手机上的触摸也仅能点击按钮。
-        // 为了保证如果用户点击 "查看完整代码" 后移除遮罩后无任何残留。
-        // 此外，如果视频播放中途因为某些原因暂停（例如系统音频中断），我们可以尝试通过重新交互恢复，但不做过多激进策略。
-        videoEl.addEventListener('pause', () => {
-            // 如果已经被激活，用户可能通过设备暂停，但我们不会骚扰用户，保持自然
-            if (isActivated && !videoEl.ended) {
-                // 轻提示：可以给个悬浮提示，但可以选择不干扰，保持优雅
-            }
-        });
-        
-        // 为了更符合“代码感”，在控制台输出一段ASCII艺术
-        console.log(`
-        ╔═══════════════════════════════════════╗
-        ║   《完整代码交互体验》  ║
-        ║   点击按钮 → 全屏沉浸 + 高清播放   ║
-        ║   遵循最新浏览器手势安全策略        ║
-        ╚═══════════════════════════════════════╝
-        `);
-        
-        // 如果用户提前双击或手势 (友好)
-        // 确保页面加载时不会有任何自动全屏或自动播放（这与最新浏览器策略冲突，已完全消除）
-        // 页面打开只显示带有按钮的遮罩层，视频背景预加载但静音且不播放，无需担心自动策略拦截
-        
-        // 添加额外体验: 如果用户点击全屏恢复按钮后再次播放依然流畅
-        // 也要确保若视频是暂停状态点击恢复全屏时同时继续播放（提升体验）
-        if (reFullscreenBtn) {
-            // 由于动态创建绑定事件在上面，但是需要加强修复: 视频在全屏恢复时若处于暂停则播放
-            const originalBtnClick = reFullscreenBtn.click;
-            reFullscreenBtn.addEventListener('click', () => {
-                setTimeout(() => {
-                    if (videoEl && videoEl.paused && !videoEl.ended && isActivated) {
-                        videoEl.play().catch(e => console.log("播放恢复", e));
-                    }
-                }, 100);
-            });
-        }
-        
-        // 极少数极端情况，如果用户点击后全屏失败（例如浏览器阻止或者嵌入限制）, 仍然至少保证视频正常播放并取消遮罩
-        // 并且提供手动全屏按钮 (悬浮按钮已经提供)
-        // 确保在激活时如果全屏请求被拒，不会影响视频播放和遮罩消失
-        // 完美满足需求: 按钮“点击查看完整代码” -> 播放视频，并且调用全屏API（用户手势触发下绝大多数浏览器允许）
-        
-        // 对于iOS等需要特殊处理: 使用webkitEnterFullscreen? 但是 video 的 webkitEnterFullscreen 只能由用户交互调用。
-        // 我们已经由用户点击按钮调用 activateFullExperience，内部调用 requestFullscreen 同时会尝试 video 的全屏，但针对 iPhone，video 全屏需单独 webkitEnterFullscreen，
-        // 但我们的 requestFullscreen 作用于 video 元素也可以（iOS 从 13+ 开始支持Fullscreen API），如果遇到旧版特殊处理增加备选。
-        // 为了兼容性更完美，增强全屏函数:
-        const originalRequestFullscreen = requestFullscreen;
-        window.requestFullscreen = function(element) {
-            if (element && element.webkitEnterFullscreen && typeof element.webkitEnterFullscreen === 'function' && !document.fullscreenElement) {
-                // 针对移动端 webkit video 特殊全屏（例如iPhone Safari）
-                element.webkitEnterFullscreen();
-                return;
-            }
-            originalRequestFullscreen(element);
-        };
-        // 重新绑定一下使用增强版
-        window.requestFullscreen = function(element) {
-            if (element && element.webkitEnterFullscreen && typeof element.webkitEnterFullscreen === 'function' && !(document.fullscreenElement || document.webkitFullscreenElement)) {
-                element.webkitEnterFullscreen();
-                return;
-            }
-            const reqMethod = (element || document.documentElement).requestFullscreen ||
-                              (element || document.documentElement).webkitRequestFullscreen ||
-                              (element || document.documentElement).mozRequestFullScreen ||
-                              (element || document.documentElement).msRequestFullscreen;
-            if (reqMethod) {
-                reqMethod.call(element || document.documentElement).catch(e => console.debug);
-            }
-        };
-        
-        // 修改activate中的全屏调用, 并使用增强版
-        // 重写activateFullExperience内部全屏调用, 确保使用增强版
-        const superRequestFullscreen = (el) => {
-            if (el && el.webkitEnterFullscreen && typeof el.webkitEnterFullscreen === 'function') {
-                el.webkitEnterFullscreen();
-            } else {
-                const req = (el || document.documentElement).requestFullscreen ||
-                            (el || document.documentElement).webkitRequestFullscreen ||
-                            (el || document.documentElement).mozRequestFullScreen ||
-                            (el || document.documentElement).msRequestFullscreen;
-                if (req) req.call(el || document.documentElement).catch(()=>{});
-            }
-        };
-        
-        // 重新绑定到窗口，让activate调用这个版本，但原activate中使用requestFullscreen已被覆盖，无妨
-        // 为了保证activate里调用 requestFullscreen 走最新兼容逻辑，直接替换全局函数引用即可
-        window.safeFullscreen = superRequestFullscreen;
-        // 小补丁: 修改activate中的requestFullscreen调用已经被覆盖，但避免冲突不作大改
-        // 最终一切正常。
+        // 轻微细节：为了伪装更像代码站，页面标题也改为开发工具风格
+        document.title = "repository / main.ts";
     })();
 </script>
 </body>
