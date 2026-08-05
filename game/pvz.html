@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>植物大战僵尸 - 塔防原型</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            font-family: 'Microsoft YaHei', sans-serif;
+            color: white;
+        }
+        #gameContainer {
+            position: relative;
+            border: 4px solid #4a4a6a;
+            border-radius: 10px;
+            box-shadow: 0 0 40px rgba(74, 74, 106, 0.5);
+        }
+        canvas {
+            display: block;
+            background: #2d5a27;
+        }
+        #ui {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
+            pointer-events: none;
+        }
+        .ui-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .sun-icon {
+            width: 30px;
+            height: 30px;
+            background: radial-gradient(circle, #FFD700, #FFA500);
+            border-radius: 50%;
+            box-shadow: 0 0 10px #FFD700;
+        }
+        #plantSelector {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            background: rgba(0,0,0,0.8);
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 2px solid #4a4a6a;
+        }
+        .plant-card {
+            width: 70px;
+            height: 90px;
+            background: linear-gradient(145deg, #3a3a5a, #2a2a4a);
+            border: 2px solid #5a5a7a;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            pointer-events: auto;
+        }
+        .plant-card:hover {
+            border-color: #FFD700;
+            transform: translateY(-5px);
+        }
+        .plant-card.selected {
+            border-color: #00FF00;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+        }
+        .plant-card.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .plant-icon {
+            font-size: 30px;
+            margin-bottom: 5px;
+        }
+        .plant-cost {
+            font-size: 12px;
+            color: #FFD700;
+        }
+        .plant-name {
+            font-size: 10px;
+            margin-top: 3px;
+        }
+        #startBtn, #restartBtn {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 15px 40px;
+            font-size: 24px;
+            background: linear-gradient(145deg, #4CAF50, #45a049);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 5px 20px rgba(76, 175, 80, 0.4);
+            transition: all 0.3s;
+        }
+        #startBtn:hover, #restartBtn:hover {
+            transform: translate(-50%, -50%) scale(1.1);
+            box-shadow: 0 8px 30px rgba(76, 175, 80, 0.6);
+        }
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+        }
+        .overlay h1 {
+            font-size: 48px;
+            color: #4CAF50;
+            text-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
+        }
+        .overlay h2 {
+            font-size: 36px;
+            color: #f44336;
+        }
+        .overlay p {
+            font-size: 18px;
+            color: #aaa;
+        }
+        #waveNotice {
+            position: absolute;
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 32px;
+            font-weight: bold;
+            color: #f44336;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+        #waveNotice.show {
+            opacity: 1;
+        }
+        .instructions {
+            position: absolute;
+            top: 50px;
+            right: 10px;
+            font-size: 12px;
+            color: rgba(255,255,255,0.5);
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="gameCanvas" width="900" height="600"></canvas>
+        
+        <div id="ui">
+            <div class="ui-item">
+                <div class="sun-icon"></div>
+                <span id="sunCount">150</span>
+            </div>
+            <div class="ui-item">
+                <span>波次: <span id="waveCount">1</span>/10</span>
+            </div>
+            <div class="ui-item">
+                <span>生命值: <span id="lives">20</span></span>
+            </div>
+        </div>
+        
+        <div id="waveNotice"></div>
+        
+        <div class="instructions">
+            点击底部卡片选择植物<br>
+            点击草坪放置植物
+        </div>
+        
+        <div id="plantSelector">
+            <div class="plant-card" data-plant="peashooter" data-cost="100">
+                <div class="plant-icon">🌱</div>
+                <div class="plant-cost">100</div>
+                <div class="plant-name">豌豆射手</div>
+            </div>
+            <div class="plant-card" data-plant="sunflower" data-cost="50">
+                <div class="plant-icon">🌻</div>
+                <div class="plant-cost">50</div>
+                <div class="plant-name">向日葵</div>
+            </div>
+            <div class="plant-card" data-plant="wallnut" data-cost="50">
+                <div class="plant-icon">🥜</div>
+                <div class="plant-cost">50</div>
+                <div class="plant-name">坚果墙</div>
+            </div>
+            <div class="plant-card" data-plant="snowpea" data-cost="175">
+                <div class="plant-icon">❄️</div>
+                <div class="plant-cost">175</div>
+                <div class="plant-name">寒冰射手</div>
+            </div>
+            <div class="plant-card" data-plant="firepea" data-cost="125">
+                <div class="plant-icon">🔥</div>
+                <div class="plant-cost">125</div>
+                <div class="plant-name">火射手</div>
+            </div>
+            <div class="plant-card" data-plant="repeater" data-cost="200">
+                <div class="plant-icon">🌿</div>
+                <div class="plant-cost">200</div>
+                <div class="plant-name">双发射手</div>
+            </div>
+            <div class="plant-card" data-plant="cherrybomb" data-cost="150">
+                <div class="plant-icon">🍒</div>
+                <div class="plant-cost">150</div>
+                <div class="plant-name">槲寄生炸弹</div>
+            </div>
+        </div>
+        
+        <div id="startScreen" class="overlay">
+            <h1>🌻 植物大战僵尸 🧟</h1>
+            <p>保护你的房子，抵御僵尸入侵！</p>
+            <button id="startBtn">开始游戏</button>
+        </div>
+        
+        <div id="gameOverScreen" class="overlay" style="display: none;">
+            <h2>💀 游戏结束</h2>
+            <p id="gameOverReason"></p>
+            <p>坚持了 <span id="finalWave">0</span> 波</p>
+            <button id="restartBtn">重新开始</button>
+        </div>
+        
+        <div id="victoryScreen" class="overlay" style="display: none;">
+            <h1>🎉 胜利！</h1>
+            <p>你成功抵御了所有僵尸波次！</p>
+            <p>剩余生命: <span id="finalLives">0</span></p>
+            <button id="restartBtn2">再来一局</button>
+        </div>
+    </div>
+
+    <script>
+        // ============ 游戏配置 ============
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        const GRID_ROWS = 5;
+        const GRID_COLS = 9;
+        const CELL_WIDTH = 100;
+        const CELL_HEIGHT = 100;
+        const GRID_OFFSET_X = 50;
+        const GRID_OFFSET_Y = 100;
+        
+        // ============ 游戏状态 ============
+        let gameState = {
+            sun: 150,
+            lives: 20,
+            wave: 1,
+            maxWave: 10,
+            selectedPlant: null,
+            plants: [],
+            zombies: [],
+            projectiles: [],
+            suns: [],
+            particles: [],
+            isRunning: false,
+            waveActive: false,
+            zombiesSpawned: 0,
+            zombiesInWave: 0,
+            spawnTimer: 0,
+            spawnInterval: 3000
+        };
+        
+        // ============ 植物定义 ============
+        const PLANT_TYPES = {
+            peashooter: {
+                name: '豌豆射手',
+                cost: 100,
+                health: 100,
+                damage: 20,
+                fireRate: 1500,
+                range: Infinity,
+                emoji: '🌱',
+                color: '#4CAF50',
+                projectileColor: '#8BC34A'
+            },
+            sunflower: {
+                name: '向日葵',
+                cost: 50,
+                health: 80,
+                sunRate: 8000,
+                emoji: '🌻',
+                color: '#FFD700'
+            },
+            wallnut: {
+                name: '坚果墙',
+                cost: 50,
+                health: 400,
+                emoji: '🥜',
+                color: '#8B4513'
+            },
+            snowpea: {
+                name: '寒冰射手',
+                cost: 175,
+                health: 100,
+                damage: 15,
+                fireRate: 1500,
+                slowFactor: 0.5,
+                emoji: '❄️',
+                color: '#00BCD4',
+                projectileColor: '#80DEEA'
+            },
+            firepea: {
+                name: '火射手',
+                cost: 125,
+                health: 100,
+                damage: 30,
+                fireRate: 1200,
+                emoji: '🔥',
+                color: '#FF5722',
+                projectileColor: '#FF9800'
+            },
+            repeater: {
+                name: '双发射手',
+                cost: 200,
+                health: 120,
+                damage: 20,
+                fireRate: 1500,
+                doubleShot: true,
+                emoji: '🌿',
+                color: '#2E7D32',
+                projectileColor: '#66BB6A'
+            },
+            cherrybomb: {
+                name: '槲寄生炸弹',
+                cost: 150,
+                health: 100,
+                damage: 500,
+                radius: 150,
+                emoji: '🍒',
+                color: '#D32F2F'
+            }
+        };
+        
+        // ============ 僵尸定义 ============
+        const ZOMBIE_TYPES = {
+            normal: {
+                name: '普通僵尸',
+                health: 100,
+                speed: 0.3,
+                damage: 10,
+                emoji: '🧟',
+                color: '#7B1FA2'
+            },
+            cone: {
+                name: '路障僵尸',
+                health: 150,
+                speed: 0.3,
+                damage: 10,
+                emoji: '🧟‍♂️',
+                color: '#9C27B0'
+            },
+            bucket: {
+                name: '铁桶僵尸',
+                health: 250,
+                speed: 0.3,
+                damage: 10,
+                emoji: '🪖',
+                color: '#673AB7'
+            },
+            runner: {
+                name: '快跑僵尸',
+                health: 80,
+                speed: 0.6,
+                damage: 10,
+                emoji: '🏃',
+                color: '#E91E63'
+            },
+            ladder: {
+                name: '梯子僵尸',
+                health: 200,
+                speed: 0.3,
+                damage: 10,
+                emoji: '🪜',
+                color: '#512DA8'
+            },
+            polevault: {
+                name: '撑杆跳僵尸',
+                health: 150,
+                speed: 0.5,
+                damage: 10,
+                emoji: '🏃‍♂️',
+                color: '#7B1FA2',
+                canVault: true
+            },
+            giant: {
+                name: '巨人僵尸',
+                health: 1000,
+                speed: 0.15,
+                damage: 30,
+                emoji: '👹',
+                color: '#311B92',
+                size: 1.5
+            }
+        };
+        
+        // ============ 波次配置 ============
+        const WAVES = [
+            [{ type: 'normal', count: 5 }],
+            [{ type: 'normal', count: 8 }],
+            [{ type: 'normal', count: 5 }, { type: 'runner', count: 3 }],
+            [{ type: 'normal', count: 6 }, { type: 'cone', count: 3 }],
+            [{ type: 'runner', count: 5 }, { type: 'cone', count: 4 }],
+            [{ type: 'normal', count: 5 }, { type: 'bucket', count: 2 }, { type: 'runner', count: 3 }],
+            [{ type: 'ladder', count: 3 }, { type: 'cone', count: 5 }],
+            [{ type: 'polevault', count: 3 }, { type: 'bucket', count: 3 }, { type: 'runner', count: 4 }],
+            [{ type: 'giant', count: 1 }, { type: 'normal', count: 8 }, { type: 'bucket', count: 3 }],
+            [{ type: 'giant', count: 2 }, { type: 'ladder', count: 3 }, { type: 'runner', count: 6 }, { type: 'bucket', count: 4 }]
+        ];
+        
+        // ============ 游戏对象类 ============
+        class Plant {
+            constructor(col, row, type) {
+                this.col = col;
+                this.row = row;
+                this.type = type;
+                this.config = PLANT_TYPES[type];
+                this.x = GRID_OFFSET_X + col * CELL_WIDTH + CELL_WIDTH / 2;
+                this.y = GRID_OFFSET_Y + row * CELL_HEIGHT + CELL_HEIGHT / 2;
+                this.health = this.config.health;
+                this.maxHealth = this.config.health;
+                this.lastFireTime = 0;
+                this.lastSunTime = 0;
+                this.exploded = false;
+                this.animFrame = 0;
+            }
+            
+            update(time) {
+                this.animFrame = time * 0.003;
+                
+                if (this.type === 'sunflower') {
+                    if (time - this.lastSunTime > this.config.sunRate) {
+                        this.spawnSun();
+                        this.lastSunTime = time;
+                    }
+                } else if (this.type !== 'wallnut' && this.type !== 'cherrybomb') {
+                    if (time - this.lastFireTime > this.config.fireRate) {
+                        this.tryFire();
+                    }
+                }
+                
+                if (this.type === 'cherrybomb' && !this.exploded) {
+                    this.checkExplosion();
+                }
+            }
+            
+            tryFire() {
+                const zombiesInRow = gameState.zombies.filter(z => 
+                    z.row === this.row && z.x > this.x
+                );
+                
+                if (zombiesInRow.length > 0) {
+                    const hasSlow = this.type === 'snowpea';
+                    const hasDouble = this.type === 'repeater';
+                    
+                    gameState.projectiles.push(new Projectile(
+                        this.x + 20, this.y, this.row, 
+                        this.config.damage, this.config.projectileColor, 
+                        hasSlow, false
+                    ));
+                    
+                    if (hasDouble) {
+                        setTimeout(() => {
+                            if (gameState.isRunning) {
+                                gameState.projectiles.push(new Projectile(
+                                    this.x + 20, this.y, this.row,
+                                    this.config.damage, this.config.projectileColor,
+                                    hasSlow, false
+                                ));
+                            }
+                        }, 200);
+                    }
+                    
+                    this.lastFireTime = Date.now();
+                }
+            }
+            
+            spawnSun() {
+                const sunX = this.x + (Math.random() - 0.5) * 40;
+                const sunY = this.y - 20 + (Math.random() - 0.5) * 20;
+                gameState.suns.push({
+                    x: sunX,
+                    y: sunY,
+                    targetY: sunY + 30 + Math.random() * 20,
+                    value: 25,
+                    life: 8000,
+                    collected: false
+                });
+            }
+            
+            checkExplosion() {
+                const nearbyZombies = gameState.zombies.filter(z => {
+                    const dx = z.x - this.x;
+                    const dy = z.y - this.y;
+                    return Math.sqrt(dx*dx + dy*dy) < this.config.radius;
+                });
+                
+                if (nearbyZombies.length > 0 || this.isTouchingZombie()) {
+                    this.explode(nearbyZombies);
+                }
+            }
+            
+            isTouchingZombie() {
+                return gameState.zombies.some(z => 
+                    Math.abs(z.x - this.x) < 30 && Math.abs(z.y - this.y) < 30 && z.row === this.row
+                );
+            }
+            
+            explode(nearbyZombies) {
+                this.exploded = true;
+                this.health = 0;
+                
+                nearbyZombies.forEach(z => {
+                    z.takeDamage(this.config.damage);
+                });
+                
+                // 创建爆炸粒子
+                for (let i = 0; i < 20; i++) {
+                    gameState.particles.push({
+                        x: this.x,
+                        y: this.y,
+                        vx: (Math.random() - 0.5) * 10,
+                        vy: (Math.random() - 0.5) * 10,
+                        life: 1,
+                        color: '#FF5722',
+                        size: 5 + Math.random() * 5
+                    });
+                }
+            }
+            
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                
+                // 绘制植物
+                ctx.font = '40px serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(this.config.emoji, 0, 0);
+                
+                // 绘制血条
+                if (this.health < this.maxHealth) {
+                    const barWidth = 50;
+                    const barHeight = 6;
+                    ctx.fillStyle = '#333';
+                    ctx.fillRect(-barWidth/2, -30, barWidth, barHeight);
+                    ctx.fillStyle = this.health > this.maxHealth * 0.5 ? '#4CAF50' : '#f44336';
+                    ctx.fillRect(-barWidth/2, -30, barWidth * (this.health / this.maxHealth), barHeight);
+                }
+                
+                ctx.restore();
+            }
+        }
+        
+        class Zombie {
+            constructor(row, type) {
+                this.row = row;
+                this.type = type;
+                this.config = ZOMBIE_TYPES[type];
+                this.x = canvas.width + 50;
+                this.y = GRID_OFFSET_Y + row * CELL_HEIGHT + CELL_HEIGHT / 2;
+                this.health = this.config.health;
+                this.maxHealth = this.config.health;
+                this.speed = this.config.speed;
+                this.baseSpeed = this.config.speed;
+                this.damage = this.config.damage;
+                this.eating = false;
+                this.slowed = false;
+                this.slowTimer = 0;
+                this.animFrame = 0;
+                this.vaulted = false;
+            }
+            
+            update(time) {
+                this.animFrame += 0.1;
+                
+                if (this.slowed) {
+                    this.slowTimer -= 16;
+                    if (this.slowTimer <= 0) {
+                        this.slowed = false;
+                        this.speed = this.baseSpeed;
+                    }
+                }
+                
+                if (this.eating) return;
+                
+                // 检查是否需要跳跃
+                if (this.config.canVault && !this.vaulted) {
+                    const firstPlant = gameState.plants.find(p => 
+                        p.row === this.row && p.x < this.x && p.x > this.x - 150
+                    );
+                    if (firstPlant && !firstPlant.exploded) {
+                        firstPlant.health = 0;
+                        this.vaulted = true;
+                        this.speed = this.baseSpeed * 1.5;
+                        createParticles(firstPlant.x, firstPlant.y, '#8B4513', 10);
+                        return;
+                    }
+                }
+                
+                // 检查是否遇到植物
+                const plantInFront = gameState.plants.find(p => 
+                    p.row === this.row && 
+                    Math.abs(p.x - this.x) < 30 && !p.exploded
+                );
+                
+                if (plantInFront) {
+                    this.eating = true;
+                    this.eatingPlant = plantInFront;
+                    return;
+                }
+                
+                this.x -= this.speed;
+                
+                // 检查是否到达房子
+                if (this.x < GRID_OFFSET_X - 30) {
+                    gameState.lives--;
+                    this.health = 0;
+                    updateUI();
+                    
+                    if (gameState.lives <= 0) {
+                        endGame(false, '僵尸进入了你的房子！');
+                    }
+                }
+            }
+            
+            eatPlant() {
+                if (this.eating && this.eatingPlant) {
+                    this.eatingPlant.health -= this.damage * 0.5;
+                    if (this.eatingPlant.health <= 0) {
+                        this.eating = false;
+                        this.eatingPlant = null;
+                        createParticles(this.eatingPlant.x, this.eatingPlant.y, '#4CAF50', 8);
+                    }
+                }
+            }
+            
+            takeDamage(amount) {
+                this.health -= amount;
+                if (this.health <= 0) {
+                    createParticles(this.x, this.y, this.config.color, 12);
+                }
+            }
+            
+            applySlow(factor, duration) {
+                this.slowed = true;
+                this.speed = this.baseSpeed * factor;
+                this.slowTimer = duration;
+            }
+            
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                
+                const size = this.config.size || 1;
+                ctx.scale(size, size);
+                
+                // 绘制减速效果
+                if (this.slowed) {
+                    ctx.fillStyle = 'rgba(0, 188, 212, 0.3)';
+                    ctx.beginPath();
+                    ctx.arc(0, 0, 25, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                // 绘制僵尸
+                ctx.font = `${35 * size}px serif`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                
+                const bobY = Math.sin(this.animFrame) * 3;
+                ctx.fillText(this.config.emoji, 0, bobY);
+                
+                ctx.restore();
+                
+                // 绘制血条
+                const barWidth = 40;
+                const barHeight = 5;
+                ctx.fillStyle = '#333';
+                ctx.fillRect(this.x - barWidth/2, this.y - 35, barWidth, barHeight);
+                ctx.fillStyle = this.health > this.maxHealth * 0.5 ? '#4CAF50' : '#f44336';
+                ctx.fillRect(this.x - barWidth/2, this.y - 35, barWidth * (this.health / this.maxHealth), barHeight);
+            }
+        }
+        
+        class Projectile {
+            constructor(x, y, row, damage, color, slow, isFire) {
+                this.x = x;
+                this.y = y;
+                this.row = row;
+                this.damage = damage;
+                this.color = color;
+                this.speed = 5;
+                this.slow = slow;
+                this.isFire = isFire;
+                this.active = true;
+            }
+            
+            update() {
+                this.x += this.speed;
+                
+                if (this.x > canvas.width) {
+                    this.active = false;
+                    return;
+                }
+                
+                // 检测命中僵尸
+                for (let zombie of gameState.zombies) {
+                    if (zombie.row === this.row && 
+                        Math.abs(zombie.x - this.x) < 25 &&
+                        zombie.health > 0) {
+                        
+                        zombie.takeDamage(this.damage);
+                        
+                        if (this.slow) {
+                            zombie.applySlow(0.5, 3000);
+                        }
+                        
+                        if (this.isFire) {
+                            createParticles(this.x, this.y, '#FF9800', 5);
+                        }
+                        
+                        this.active = false;
+                        break;
+                    }
+                }
+            }
+            
+            draw() {
+                ctx.save();
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 8, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // 火焰效果
+                if (this.isFire) {
+                    ctx.fillStyle = 'rgba(255, 152, 0, 0.5)';
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, 12, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                ctx.restore();
+            }
+        }
+        
+        // ============ 工具函数 ============
+        function createParticles(x, y, color, count) {
+            for (let i = 0; i < count; i++) {
+                gameState.particles.push({
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 8,
+                    vy: (Math.random() - 0.5) * 8,
+                    life: 1,
+                    color: color,
+                    size: 3 + Math.random() * 4
+                });
+            }
+        }
+        
+        function updateUI() {
+            document.getElementById('sunCount').textContent = gameState.sun;
+            document.getElementById('waveCount').textContent = gameState.wave;
+            document.getElementById('lives').textContent = gameState.lives;
+            
+            // 更新植物卡片状态
+            document.querySelectorAll('.plant-card').forEach(card => {
+                const cost = parseInt(card.dataset.cost);
+                const type = card.dataset.plant;
+                
+                if (gameState.sun < cost) {
+                    card.classList.add('disabled');
+                } else {
+                    card.classList.remove('disabled');
+                }
+                
+                if (gameState.selectedPlant === type) {
+                    card.classList.add('selected');
+                } else {
+                    card.classList.remove('selected');
+                }
+            });
+        }
+        
+        function showWaveNotice(waveNum) {
+            const notice = document.getElementById('waveNotice');
+            notice.textContent = `第 ${waveNum} 波僵尸来袭！`;
+            notice.classList.add('show');
+            setTimeout(() => notice.classList.remove('show'), 2000);
+        }
+        
+        // ============ 游戏逻辑 ============
+        function startWave() {
+            if (gameState.wave > gameState.maxWave) {
+                endGame(true);
+                return;
+            }
+            
+            gameState.waveActive = true;
+            gameState.zombiesSpawned = 0;
+            
+            const waveConfig = WAVES[gameState.wave - 1];
+            gameState.zombiesInWave = waveConfig.reduce((sum, group) => sum + group.count, 0);
+            
+            showWaveNotice(gameState.wave);
+        }
+        
+        function spawnZombie() {
+            const waveConfig = WAVES[gameState.wave - 1];
+            let remaining = gameState.zombiesInWave - gameState.zombiesSpawned;
+            
+            if (remaining <= 0) return;
+            
+            // 计算当前应该生成的僵尸类型
+            let spawnedSoFar = 0;
+            let type = 'normal';
+            
+            for (let group of waveConfig) {
+                if (spawnedSoFar + group.count >= remaining) {
+                    type = group.type;
+                    break;
+                }
+                spawnedSoFar += group.count;
+            }
+            
+            const row = Math.floor(Math.random() * GRID_ROWS);
+            gameState.zombies.push(new Zombie(row, type));
+            gameState.zombiesSpawned++;
+            
+            // 检查波次完成
+            if (gameState.zombiesSpawned >= gameState.zombiesInWave) {
+                gameState.waveActive = false;
+            }
+        }
+        
+        function update() {
+            if (!gameState.isRunning) return;
+            
+            const time = Date.now();
+            
+            // 生成僵尸
+            if (gameState.waveActive && time - gameState.spawnTimer > gameState.spawnInterval) {
+                spawnZombie();
+                gameState.spawnTimer = time;
+            }
+            
+            // 检查波次结束
+            if (!gameState.waveActive && gameState.zombies.length === 0 && gameState.zombiesSpawned > 0) {
+                gameState.wave++;
+                gameState.spawnInterval = Math.max(1000, 3000 - gameState.wave * 150);
+                setTimeout(startWave, 2000);
+            }
+            
+            // 更新植物
+            gameState.plants = gameState.plants.filter(p => {
+                p.update(time);
+                return p.health > 0 && !p.exploded;
+            });
+            
+            // 更新僵尸
+            gameState.zombies.forEach(z => {
+                z.update(time);
+                if (z.eating) z.eatPlant();
+            });
+            gameState.zombies = gameState.zombies.filter(z => z.health > 0);
+            
+            // 更新投射物
+            gameState.projectiles.forEach(p => p.update());
+            gameState.projectiles = gameState.projectiles.filter(p => p.active);
+            
+            // 更新阳光
+            gameState.suns.forEach(s => {
+                if (s.y < s.targetY) s.y += 1;
+                s.life -= 16;
+            });
+            gameState.suns = gameState.suns.filter(s => s.life > 0 && !s.collected);
+            
+            // 更新粒子
+            gameState.particles.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life -= 0.02;
+                p.vy += 0.2;
+            });
+            gameState.particles = gameState.particles.filter(p => p.life > 0);
+            
+            // 自然生成阳光
+            if (Math.random() < 0.002) {
+                const x = GRID_OFFSET_X + Math.random() * (GRID_COLS * CELL_WIDTH);
+                const y = GRID_OFFSET_Y + Math.random() * (GRID_ROWS * CELL_HEIGHT);
+                gameState.suns.push({
+                    x: x,
+                    y: y - 50,
+                    targetY: y,
+                    value: 25,
+                    life: 10000,
+                    collected: false
+                });
+            }
+            
+            updateUI();
+        }
+        
+        function draw() {
+            // 清空画布
+            ctx.fillStyle = '#1a3a1a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // 绘制草坪
+            drawGrid();
+            
+            // 绘制植物
+            gameState.plants.forEach(p => p.draw());
+            
+            // 绘制僵尸
+            gameState.zombies.forEach(z => z.draw());
+            
+            // 绘制投射物
+            gameState.projectiles.forEach(p => p.draw());
+            
+            // 绘制阳光
+            gameState.suns.forEach(s => {
+                ctx.save();
+                ctx.font = '30px serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('☀️', s.x, s.y);
+                ctx.restore();
+            });
+            
+            // 绘制粒子
+            gameState.particles.forEach(p => {
+                ctx.save();
+                ctx.globalAlpha = p.life;
+                ctx.fillStyle = p.color;
+                ctx.fillRect(p.x - p.size/2, p.y - p.size/2, p.size, p.size);
+                ctx.restore();
+            });
+            
+            // 绘制选中的植物预览
+            if (gameState.selectedPlant) {
+                drawPlacementPreview();
+            }
+        }
+        
+        function drawGrid() {
+            // 绘制行
+            for (let row = 0; row < GRID_ROWS; row++) {
+                const y = GRID_OFFSET_Y + row * CELL_HEIGHT;
+                
+                // 草地背景
+                ctx.fillStyle = row % 2 === 0 ? '#2d5a27' : '#3a6b35';
+                ctx.fillRect(GRID_OFFSET_X, y, GRID_COLS * CELL_WIDTH, CELL_HEIGHT);
+                
+                // 网格线
+                ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(GRID_OFFSET_X, y, GRID_COLS * CELL_WIDTH, CELL_HEIGHT);
+            }
+            
+            // 绘制列线
+            for (let col = 0; col <= GRID_COLS; col++) {
+                const x = GRID_OFFSET_X + col * CELL_WIDTH;
+                ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+                ctx.beginPath();
+                ctx.moveTo(x, GRID_OFFSET_Y);
+                ctx.lineTo(x, GRID_OFFSET_Y + GRID_ROWS * CELL_HEIGHT);
+                ctx.stroke();
+            }
+            
+            // 绘制房子区域
+            ctx.fillStyle = '#5D4037';
+            ctx.fillRect(0, GRID_OFFSET_Y, GRID_OFFSET_X - 10, GRID_ROWS * CELL_HEIGHT);
+            
+            // 房子细节
+            ctx.fillStyle = '#8D6E63';
+            ctx.fillRect(10, GRID_OFFSET_Y + 20, 30, 40);
+            ctx.fillRect(50, GRID_OFFSET_Y + 20, 30, 40);
+            ctx.fillRect(10, GRID_OFFSET_Y + 70, 70, 30);
+        }
+        
+        function drawPlacementPreview() {
+            // 预览效果在鼠标移动时绘制
+        }
+        
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+        
+        function startGame() {
+            gameState = {
+                sun: 150,
+                lives: 20,
+                wave: 1,
+                maxWave: 10,
+                selectedPlant: null,
+                plants: [],
+                zombies: [],
+                projectiles: [],
+                suns: [],
+                particles: [],
+                isRunning: true,
+                waveActive: false,
+                zombiesSpawned: 0,
+                zombiesInWave: 0,
+                spawnTimer: 0,
+                spawnInterval: 3000
+            };
+            
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('gameOverScreen').style.display = 'none';
+            document.getElementById('victoryScreen').style.display = 'none';
+            
+            updateUI();
+            setTimeout(startWave, 1000);
+        }
+        
+        function endGame(victory, reason = '') {
+            gameState.isRunning = false;
+            
+            if (victory) {
+                document.getElementById('finalLives').textContent = gameState.lives;
+                document.getElementById('victoryScreen').style.display = 'flex';
+            } else {
+                document.getElementById('gameOverReason').textContent = reason;
+                document.getElementById('finalWave').textContent = gameState.wave;
+                document.getElementById('gameOverScreen').style.display = 'flex';
+            }
+        }
+        
+        // ============ 输入处理 ============
+        canvas.addEventListener('click', (e) => {
+            if (!gameState.isRunning) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            // 检查是否点击阳光
+            for (let sun of gameState.suns) {
+                const dx = x - sun.x;
+                const dy = y - sun.y;
+                if (Math.sqrt(dx*dx + dy*dy) < 30) {
+                    gameState.sun += sun.value;
+                    sun.collected = true;
+                    createParticles(sun.x, sun.y, '#FFD700', 5);
+                    updateUI();
+                    return;
+                }
+            }
+            
+            // 放置植物
+            if (gameState.selectedPlant) {
+                const col = Math.floor((x - GRID_OFFSET_X) / CELL_WIDTH);
+                const row = Math.floor((y - GRID_OFFSET_Y) / CELL_HEIGHT);
+                
+                if (col >= 0 && col < GRID_COLS && row >= 0 && row < GRID_ROWS) {
+                    // 检查是否已有植物
+                    const existingPlant = gameState.plants.find(p => p.col === col && p.row === row);
+                    if (!existingPlant) {
+                        const plantConfig = PLANT_TYPES[gameState.selectedPlant];
+                        if (gameState.sun >= plantConfig.cost) {
+                            gameState.sun -= plantConfig.cost;
+                            gameState.plants.push(new Plant(col, row, gameState.selectedPlant));
+                            gameState.selectedPlant = null;
+                            updateUI();
+                        }
+                    }
+                }
+            }
+        });
+        
+        canvas.addEventListener('mousemove', (e) => {
+            if (!gameState.isRunning || !gameState.selectedPlant) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const col = Math.floor((x - GRID_OFFSET_X) / CELL_WIDTH);
+            const row = Math.floor((y - GRID_OFFSET_Y) / CELL_HEIGHT);
+            
+            // 清除之前的预览
+            draw();
+            
+            // 绘制预览
+            if (col >= 0 && col < GRID_COLS && row >= 0 && row < GRID_ROWS) {
+                const previewX = GRID_OFFSET_X + col * CELL_WIDTH + CELL_WIDTH / 2;
+                const previewY = GRID_OFFSET_Y + row * CELL_HEIGHT + CELL_HEIGHT / 2;
+                
+                ctx.save();
+                ctx.globalAlpha = 0.5;
+                ctx.font = '40px serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(PLANT_TYPES[gameState.selectedPlant].emoji, previewX, previewY);
+                ctx.restore();
+                
+                // 高亮格子
+                ctx.strokeStyle = '#FFD700';
+                ctx.lineWidth = 3;
+                ctx.strokeRect(
+                    GRID_OFFSET_X + col * CELL_WIDTH,
+                    GRID_OFFSET_Y + row * CELL_HEIGHT,
+                    CELL_WIDTH,
+                    CELL_HEIGHT
+                );
+            }
+        });
+        
+        // 植物选择
+        document.querySelectorAll('.plant-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const type = card.dataset.plant;
+                const cost = parseInt(card.dataset.cost);
+                
+                if (gameState.sun >= cost) {
+                    gameState.selectedPlant = gameState.selectedPlant === type ? null : type;
+                    updateUI();
+                }
+            });
+        });
+        
+        // 按钮事件
+        document.getElementById('startBtn').addEventListener('click', startGame);
+        document.getElementById('restartBtn').addEventListener('click', startGame);
+        document.getElementById('restartBtn2').addEventListener('click', startGame);
+        
+        // 启动游戏循环
+        gameLoop();
+    </script>
+</body>
+</html>
